@@ -22,7 +22,7 @@ import {
   Server,
   Zap,
 } from 'lucide-react';
-import FloatingLines from '../components/animations/FloatingLines';
+import Antigravity from '../components/animations/Antigravity';
 
 interface LandingPageProps {
   onLaunchWorkstation: () => void;
@@ -85,31 +85,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   return (
     <div className="relative min-h-screen bg-slate-50/60 text-slate-800 font-sans selection:bg-sky-500 selection:text-white">
-      {/* 0. Full-Page Ambient Floating Lines: light medical theme, reacting to cursor throughout page */}
+      {/* 0. Full-Page Ambient Antigravity Particle Field: light medical theme, reacting to cursor throughout page */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <FloatingLines
-          linesGradient={['#0284c7', '#06b6d4', '#4f46e5', '#38bdf8', '#0d9488']}
-          enabledWaves={['top', 'middle', 'bottom']}
-          lineCount={[12, 16, 12]}
-          lineDistance={[8, 10, 8]}
-          topWavePosition={{ x: 10, y: 0.65, rotate: -0.25 }}
-          middleWavePosition={{ x: 0, y: 0.05, rotate: 0.15 }}
-          bottomWavePosition={{ x: -10, y: -0.7, rotate: -0.15 }}
-          lineWidth={1.8}
-          glow={1.2}
-          brightness={1.3}
-          animationSpeed={0.7}
-          amplitude={1.0}
+        <Antigravity
+          colors={['#0284c7', '#06b6d4', '#4f46e5', '#38bdf8', '#0d9488']}
+          count={1500}
+          magnetRadius={10}
+          ringRadius={7.5}
+          particleSize={1.1}
+          particleShape="capsule"
+          colorMode="conic"
+          autoAnimate={true}
           interactive={true}
-          bendRadius={7}
-          bendStrength={-0.8}
-          mouseDamping={0.06}
-          parallax={true}
-          parallaxStrength={0.25}
-          clickSwirl={true}
-          intro={true}
+          clickBurst={true}
           lightMode={true}
-          opacity={0.8}
+          opacity={0.85}
           style={{ width: '100vw', height: '100vh', position: 'fixed', inset: 0 }}
         />
       </div>
