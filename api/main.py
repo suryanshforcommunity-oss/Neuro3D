@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from neuroscope.config import RESEARCH_DISCLAIMER
 from neuroscope.retention import cleanup_expired_studies
-from api.routes import health, studies
+from api.routes import health, studies, auth_routes, patient_routes
 
 from contextlib import asynccontextmanager
 
@@ -44,6 +44,8 @@ app.add_middleware(
 # Register routers
 app.include_router(health.router)
 app.include_router(studies.router)
+app.include_router(auth_routes.router)
+app.include_router(patient_routes.router)
 
 
 @app.get("/")

@@ -12,9 +12,25 @@ import { SettingsPage } from './pages/SettingsPage';
 import { NiftiUploadModal } from './components/upload/NiftiUploadModal';
 import { HelpGuideModal } from './components/common/HelpGuideModal';
 import { LandingPage } from './pages/LandingPage';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthModal } from './components/auth/AuthModal';
+import { PatientPortalPage } from './pages/PatientPortalPage';
 
-export const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const state = useNeuroScopeState();
+  const { role, openAuthModal } = useAuth();
+
+  // If authenticated as a Patient, display dedicated Patient Portal
+  if (role === 'patient') {
+    return (
+      <div className="min-h-screen w-screen bg-slate-50 overflow-y-auto font-sans">
+        <PatientPortalPage
+          onGoHome={() => state.setActivePage('landing')}
+        />
+        <AuthModal />
+      </div>
+    );
+  }
 
   // If user is on the SaaS Landing Page
   if (state.activePage === 'landing') {
@@ -27,6 +43,8 @@ export const App: React.FC = () => {
             state.setActivePage('workspace');
           }}
           onOpenUpload={() => state.setIsUploadModalOpen(true)}
+          onOpenDoctorLogin={() => openAuthModal('doctor')}
+          onOpenPatientLogin={() => openAuthModal('patient')}
           backendStatus={state.backendStatus}
           activeModelName={state.modelReliability.modelName}
         />
@@ -47,10 +65,13 @@ export const App: React.FC = () => {
           isOpen={state.isHelpModalOpen}
           onClose={() => state.setIsHelpModalOpen(false)}
         />
+
+        <AuthModal />
       </div>
     );
   }
 
+  // Doctor Clinician Workstation (Full 3D Viewer & AI Pipeline)
   return (
     <div className="flex flex-col h-screen w-screen bg-slate-100/90 text-slate-800 overflow-hidden font-sans print:h-auto print:w-auto print:overflow-visible print:bg-white print:block">
       {/* 1. Regulatory Mandatory Disclaimer Banner */}
@@ -190,7 +211,17 @@ export const App: React.FC = () => {
         isOpen={state.isHelpModalOpen}
         onClose={() => state.setIsHelpModalOpen(false)}
       />
+
+      <AuthModal />
     </div>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 };
 

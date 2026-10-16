@@ -8,8 +8,12 @@ import {
   Brain,
   Sliders,
   Home,
+  LogOut,
+  UserCheck,
+  Stethoscope,
 } from 'lucide-react';
 import { NavigationPage } from '../../hooks/useNeuroScopeState';
+import { useAuth } from '../../context/AuthContext';
 
 interface SidebarProps {
   activePage: NavigationPage;
@@ -17,6 +21,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ activePage, onSelectPage }) => {
+  const { user, logout, openAuthModal } = useAuth();
   const navItems: { id: NavigationPage; label: string; icon: React.ComponentType<{ className?: string }>; description: string }[] = [
     {
       id: 'landing',
@@ -125,6 +130,38 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onSelectPage }) =>
             );
           })}
         </nav>
+      </div>
+
+      {/* Active User Session */}
+      <div className="px-3 py-2 border-t border-slate-200/80 bg-slate-50/60">
+        {user ? (
+          <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-200 shadow-2xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-7 h-7 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center flex-shrink-0">
+                {user.role === 'doctor' ? <Stethoscope className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
+              </div>
+              <div className="truncate">
+                <p className="text-xs font-bold text-slate-800 truncate leading-tight">{user.displayName || user.name}</p>
+                <p className="text-[10px] text-slate-500 font-mono capitalize">{user.role}</p>
+              </div>
+            </div>
+            <button
+              onClick={logout}
+              title="Sign out"
+              className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => openAuthModal('doctor')}
+            className="w-full flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl bg-white hover:bg-sky-50 text-sky-700 border border-sky-200 text-xs font-semibold transition shadow-2xs"
+          >
+            <UserCheck className="w-3.5 h-3.5" />
+            <span>Sign In / Change Role</span>
+          </button>
+        )}
       </div>
 
       {/* Footer / System status */}

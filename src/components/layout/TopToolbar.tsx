@@ -9,9 +9,14 @@ import {
   Layers,
   Sparkles,
   Home,
+  LogOut,
+  User,
+  Stethoscope,
+  HeartPulse,
 } from 'lucide-react';
 import { Badge } from '../common/Badge';
 import { MriSequenceType, VoxelCoordinate, WorldCoordinate } from '../../types';
+import { useAuth } from '../../context/AuthContext';
 
 interface TopToolbarProps {
   studyId?: string;
@@ -46,6 +51,8 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   crosshair,
   worldCoordinate,
 }) => {
+  const { user, logout, openAuthModal } = useAuth();
+
   const sequences: { id: MriSequenceType; label: string; desc: string }[] = [
     { id: 'T1', label: 'T1', desc: 'Standard brain structure scan' },
     { id: 'T1Gd', label: 'T1-Gd', desc: 'Contrast dye scan (highlights active tumor)' },
@@ -213,6 +220,35 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         >
           <HelpCircle className="w-4 h-4" />
         </button>
+
+        {/* User Profile & Logout */}
+        {user ? (
+          <div className="flex items-center gap-1.5 pl-1.5 border-l border-slate-200">
+            <div className="hidden sm:flex flex-col text-right">
+              <span className="text-[11px] font-bold text-slate-800 leading-tight">
+                {user.displayName || user.name}
+              </span>
+              <span className="text-[9px] font-mono font-semibold text-sky-700 capitalize">
+                {user.role === 'doctor' ? 'Clinician' : 'Patient'}
+              </span>
+            </div>
+            <button
+              onClick={logout}
+              title={`Sign out (${user.displayName || user.name})`}
+              className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 border border-slate-200 transition"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => openAuthModal('doctor')}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-semibold transition ml-1"
+          >
+            <User className="w-3.5 h-3.5" />
+            <span>Sign In</span>
+          </button>
+        )}
       </div>
     </header>
   );

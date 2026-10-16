@@ -1,0 +1,41 @@
+{
+  "doc_001": {
+    "id": "doc_001",
+    "email": "doctor@neuroscope.ai",
+    "username": "dr.chen",
+    "role": "doctor",
+    "name": "Dr. Sarah Chen, MD",
+    "department": "Neuroradiology & Neurosurgery",
+    "licenseNumber": "MED-NY-849201",
+    "passwordHash": "fc02c74f0b71428879c5f14bc250ccb4$af7aa18d44c07aaa8670c4e2d6fc8e167a10161245231178d5fc643d481f7da6",
+    "createdAt": "2026-01-10T08:00:00Z"
+  },
+  "pat_001": {
+    "id": "pat_001",
+    "patientId": "PAT-2026-0042",
+    "email": "patient@neuroscope.ai",
+    "username": "eleanor.vance",
+    "role": "patient",
+    "name": "Eleanor Vance",
+    "dateOfBirth": "1978-04-12",
+    "gender": "Female",
+    "treatingDoctor": "Dr. Sarah Chen, MD",
+    "hospital": "Memorial Neurological Institute",
+    "passwordHash": "11b8189567ad1dd3e2e37c8e28ec5468$223d0de07d56a7da440c4e14714e2ba7e9ee17650469df1d62b27225a70e40ce",
+    "createdAt": "2026-02-15T10:30:00Z"
+  },
+  "pat_002": {
+    "id": "pat_002",
+    "patientId": "PAT-2026-0108",
+    "email": "james.wilson@example.com",
+    "username": "james.wilson",
+    "role": "patient",
+    "name": "James R. Wilson",
+    "dateOfBirth": "1965-09-24",
+    "gender": "Male",
+    "treatingDoctor": "Dr. Sarah Chen, MD",
+    "hospital": "Memorial Neurological Institute",
+    "passwordHash": "c0f566bbd4b851f01aeee0a2ebf19610$33c61ee00c696978d05346bfc3819b2919348728401b1eb184d361d62bfeb9f6",
+    "createdAt": "2026-03-01T14:15:00Z"
+  }
+}

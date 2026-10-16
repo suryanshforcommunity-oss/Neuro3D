@@ -21,6 +21,10 @@ import {
   Crosshair,
   Server,
   Zap,
+  Stethoscope,
+  HeartPulse,
+  LogIn,
+  User,
 } from 'lucide-react';
 import Antigravity from '../components/animations/Antigravity';
 import { ShowcaseBrain3D } from '../components/viewer/ShowcaseBrain3D';
@@ -30,6 +34,8 @@ interface LandingPageProps {
   onLaunchWorkstation: () => void;
   onLoadDemoCase: () => void;
   onOpenUpload: () => void;
+  onOpenDoctorLogin?: () => void;
+  onOpenPatientLogin?: () => void;
   backendStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
   activeModelName?: string;
 }
@@ -38,6 +44,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onLaunchWorkstation,
   onLoadDemoCase,
   onOpenUpload,
+  onOpenDoctorLogin,
+  onOpenPatientLogin,
   backendStatus,
   activeModelName = 'MONAI SegResNet (BraTS 2023)',
 }) => {
@@ -148,21 +156,43 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           {/* Right Action CTAs */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={onLoadDemoCase}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition"
+              className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition"
             >
               <Database className="w-3.5 h-3.5 text-slate-500" />
-              <span>Load Sample Scan</span>
+              <span>Load Sample</span>
             </button>
+
+            {onOpenDoctorLogin && (
+              <button
+                onClick={onOpenDoctorLogin}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-sky-800 bg-sky-50 hover:bg-sky-100 border border-sky-200 transition"
+                title="Sign in as Clinician / Doctor"
+              >
+                <Stethoscope className="w-3.5 h-3.5 text-sky-600" />
+                <span className="hidden sm:inline">Clinician</span> Login
+              </button>
+            )}
+
+            {onOpenPatientLogin && (
+              <button
+                onClick={onOpenPatientLogin}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition"
+                title="Sign in to Patient Portal"
+              >
+                <HeartPulse className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Patient Portal</span>
+              </button>
+            )}
 
             <button
               onClick={onLaunchWorkstation}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 shadow-md shadow-sky-500/20 transition-all transform hover:-translate-y-0.5"
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 shadow-md shadow-sky-500/20 transition-all transform hover:-translate-y-0.5"
             >
-              <span>Open 3D Viewer</span>
-              <ArrowRight className="w-4 h-4" />
+              <span>3D Viewer</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -214,6 +244,57 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <FileText className="w-4 h-4 text-sky-600" />
                 <span>Upload MRI Scans (NIfTI)</span>
               </button>
+            </div>
+
+            {/* Dual Role Direct Access Cards */}
+            <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto text-left">
+              <div
+                onClick={onOpenDoctorLogin || onLaunchWorkstation}
+                className="cursor-pointer group p-4 rounded-2xl bg-white/90 border border-sky-100 shadow-sm hover:shadow-md hover:border-sky-300 transition-all"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 text-sky-800 font-bold text-sm">
+                    <div className="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <Stethoscope className="w-4 h-4" />
+                    </div>
+                    <span>Clinician Workstation</span>
+                  </div>
+                  <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 font-medium border border-sky-200">
+                    Doctor Portal
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 mb-3 leading-relaxed">
+                  Full 4-sequence MRI analysis, AI segmentation (NCR, ED, ET), Dice evaluation metrics, and clinical reports.
+                </p>
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-sky-600 group-hover:text-sky-700">
+                  <span>Sign in as Clinician</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+
+              <div
+                onClick={onOpenPatientLogin}
+                className="cursor-pointer group p-4 rounded-2xl bg-white/90 border border-emerald-100 shadow-sm hover:shadow-md hover:border-emerald-300 transition-all"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <HeartPulse className="w-4 h-4" />
+                    </div>
+                    <span>Patient Health Portal</span>
+                  </div>
+                  <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-medium border border-emerald-200">
+                    Patient & Family
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 mb-3 leading-relaxed">
+                  Track tumor growth or shrinkage over time, view anatomical location timelines, and access simplified 3D reports.
+                </p>
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 group-hover:text-emerald-700">
+                  <span>Sign in to Patient Portal</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
             </div>
 
             {/* Trust & Spec Checklist */}
