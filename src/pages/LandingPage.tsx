@@ -89,17 +89,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <Antigravity
           colors={['#0284c7', '#06b6d4', '#4f46e5', '#38bdf8', '#0d9488']}
-          count={1500}
-          magnetRadius={10}
-          ringRadius={7.5}
-          particleSize={1.1}
+          count={1600}
+          magnetRadius={8.5}
+          ringRadius={6.5}
+          particleSize={0.45}
+          particleVariance={0.5}
           particleShape="capsule"
           colorMode="conic"
+          fieldStrength={12}
           autoAnimate={true}
           interactive={true}
           clickBurst={true}
           lightMode={true}
-          opacity={0.85}
+          opacity={0.8}
           style={{ width: '100vw', height: '100vh', position: 'fixed', inset: 0 }}
         />
       </div>
