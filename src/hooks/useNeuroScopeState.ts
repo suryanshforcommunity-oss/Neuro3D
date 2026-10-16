@@ -21,7 +21,7 @@ import { validateNiftiFile } from '../utils/niftiValidation';
 import { getOrCreateDemoVolume, DEMO_PROVENANCE, DEMO_MODEL_RELIABILITY } from '../data/demoData';
 import { apiClient } from '../services/api';
 
-export type NavigationPage = 'landing' | 'workspace' | 'segmentation' | 'evaluation' | 'reports' | 'modelInfo' | 'settings';
+export type NavigationPage = 'landing' | 'workspace' | 'segmentation' | 'evaluation' | 'reports' | 'modelInfo' | 'settings' | 'pipeline';
 
 export function useNeuroScopeState() {
   const [activePage, setActivePage] = useState<NavigationPage>('landing');

@@ -11,6 +11,7 @@ import {
   LogOut,
   UserCheck,
   Stethoscope,
+  Network,
 } from 'lucide-react';
 import { NavigationPage } from '../../hooks/useNeuroScopeState';
 import { useAuth } from '../../context/AuthContext';
@@ -52,6 +53,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onSelectPage }) =>
       label: 'Tumor Summary Report',
       icon: FileText,
       description: 'Exact volume measurements and printable case summary',
+    },
+    {
+      id: 'pipeline',
+      label: 'System Pipeline',
+      icon: Network,
+      description: 'Interactive visualization of MRI pipeline, architecture & API monitor',
     },
     {
       id: 'modelInfo',

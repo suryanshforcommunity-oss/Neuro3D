@@ -16,6 +16,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthModal } from './components/auth/AuthModal';
 import { PatientPortalPage } from './pages/PatientPortalPage';
 import { LoginPage } from './pages/LoginPage';
+import { PipelineArchitecturePage } from './pages/PipelineArchitecturePage';
 
 const AppContent: React.FC = () => {
   const state = useNeuroScopeState();
@@ -179,6 +180,15 @@ const AppContent: React.FC = () => {
             <ReportsPage
               provenance={state.provenance}
               reliabilityInfo={state.modelReliability}
+            />
+          )}
+
+          {state.activePage === 'pipeline' && (
+            <PipelineArchitecturePage
+              backendStatus={state.backendStatus}
+              backendUrl={state.backendUrl}
+              onCheckBackend={state.checkBackendHealth}
+              modelReliability={state.modelReliability}
             />
           )}
 
