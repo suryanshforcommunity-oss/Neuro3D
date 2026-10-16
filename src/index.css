@@ -1,0 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #080B12;
+  color: #E2E8F0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  user-select: none;
+}
+
+/* Custom workstation scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0D111A;
+}
+::-webkit-scrollbar-thumb {
+  background: #1E293B;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Subtle glow utilities */
+.glow-cyan-sm {
+  box-shadow: 0 0 15px -3px rgba(0, 242, 254, 0.25);
+}
+
+.glow-violet-sm {
+  box-shadow: 0 0 15px -3px rgba(139, 92, 246, 0.25);
+}
+
+.glow-amber-sm {
+  box-shadow: 0 0 15px -3px rgba(245, 158, 11, 0.25);
+}
+
+/* Medical canvas crosshair */
+.canvas-crosshair {
+  cursor: crosshair;
+}
+
+/* Range input styling for workstation sliders */
+input[type="range"] {
+  accent-color: #00F2FE;
+}
+
+/* Print layout for clinical / research reports */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .print-page {
+    page-break-after: always;
+    padding: 2cm;
+    color: #111827 !important;
+    background: #ffffff !important;
+  }
+  .print-page * {
+    color: #111827 !important;
+    border-color: #E5E7EB !important;
+  }
+}

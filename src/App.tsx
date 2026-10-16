@@ -1,0 +1,191 @@
+import React from 'react';
+import { useNeuroScopeState } from './hooks/useNeuroScopeState';
+import { DisclaimerBanner } from './components/layout/DisclaimerBanner';
+import { TopToolbar } from './components/layout/TopToolbar';
+import { Sidebar } from './components/layout/Sidebar';
+import { WorkspacePage } from './pages/WorkspacePage';
+import { SegmentationPage } from './pages/SegmentationPage';
+import { EvaluationPage } from './pages/EvaluationPage';
+import { ReportsPage } from './pages/ReportsPage';
+import { ModelInfoPage } from './pages/ModelInfoPage';
+import { SettingsPage } from './pages/SettingsPage';
+import { NiftiUploadModal } from './components/upload/NiftiUploadModal';
+import { HelpGuideModal } from './components/common/HelpGuideModal';
+import { LandingPage } from './pages/LandingPage';
+
+export const App: React.FC = () => {
+  const state = useNeuroScopeState();
+
+  // If user is on the SaaS Landing Page
+  if (state.activePage === 'landing') {
+    return (
+      <div className="h-screen w-screen bg-slate-50 overflow-y-auto font-sans">
+        <LandingPage
+          onLaunchWorkstation={() => state.setActivePage('workspace')}
+          onLoadDemoCase={() => {
+            state.loadDemoCase();
+            state.setActivePage('workspace');
+          }}
+          onOpenUpload={() => state.setIsUploadModalOpen(true)}
+          backendStatus={state.backendStatus}
+          activeModelName={state.modelReliability.modelName}
+        />
+
+        {/* Modals accessible from landing page */}
+        <NiftiUploadModal
+          isOpen={state.isUploadModalOpen}
+          onClose={() => state.setIsUploadModalOpen(false)}
+          sequences={state.uploadedSequences}
+          onUploadFile={state.handleUploadFile}
+          onRemoveSequence={state.handleRemoveSequence}
+          onConfirmLoad={() => {
+            state.setActivePage('workspace');
+          }}
+        />
+
+        <HelpGuideModal
+          isOpen={state.isHelpModalOpen}
+          onClose={() => state.setIsHelpModalOpen(false)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-screen w-screen bg-[#080B12] text-slate-100 overflow-hidden font-sans">
+      {/* 1. Regulatory Mandatory Disclaimer Banner */}
+      <DisclaimerBanner />
+
+      {/* 2. Top Station Toolbar */}
+      <TopToolbar
+        studyId={state.provenance?.studyId || 'No Case Loaded'}
+        isDemoMode={state.isDemoMode}
+        backendStatus={state.backendStatus}
+        backendUrl={state.backendUrl}
+        onCheckBackend={state.checkBackendHealth}
+        onResetView={state.resetView}
+        onOpenUpload={() => state.setIsUploadModalOpen(true)}
+        onOpenHelp={() => state.setIsHelpModalOpen(true)}
+        onLoadDemo={state.loadDemoCase}
+        onGoHome={() => state.setActivePage('landing')}
+        activeSequence={state.activeSequence}
+        onSelectSequence={state.setActiveSequence}
+        crosshair={state.crosshair}
+        worldCoordinate={state.worldCoordinate}
+      />
+
+      {/* 3. Main Workspace Area: Sidebar + Active Page */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Navigation Sidebar */}
+        <Sidebar
+          activePage={state.activePage}
+          onSelectPage={state.setActivePage}
+        />
+
+        {/* Dynamic Center Workstation Page */}
+        <main className="flex-1 flex flex-col overflow-hidden bg-[#080B12]">
+          {state.activePage === 'workspace' && (
+            <WorkspacePage
+              crosshair={state.crosshair}
+              onUpdateCrosshair={state.setCrosshair}
+              worldCoordinate={state.worldCoordinate}
+              dimensions={state.dimensions}
+              spacing={state.spacing}
+              affine={state.affine}
+              activeVolume={state.activeVolume}
+              segmentationMask={state.segmentationMask}
+              expertMask={state.expertMask}
+              labelCounts={state.labelCounts}
+              expertCounts={state.expertCounts}
+              visibility={state.regionVisibility}
+              opacity={state.regionOpacity}
+              windowLevel={state.windowLevel}
+              clipping={state.clippingPlanes}
+              isDemoMode={state.isDemoMode}
+              onToggleVisibility={key =>
+                state.setRegionVisibility(prev => ({ ...prev, [key]: !prev[key] }))
+              }
+              onChangeOpacity={(key, val) =>
+                state.setRegionOpacity(prev => ({ ...prev, [key]: val }))
+              }
+              onChangeWindowLevel={state.setWindowLevel}
+              onChangeClipping={state.setClippingPlanes}
+              onResetCamera={state.resetView}
+            />
+          )}
+
+          {state.activePage === 'segmentation' && (
+            <SegmentationPage
+              labelCounts={state.labelCounts}
+              spacing={state.spacing}
+              visibility={state.regionVisibility}
+              opacity={state.regionOpacity}
+              onToggleVisibility={key =>
+                state.setRegionVisibility(prev => ({ ...prev, [key]: !prev[key] }))
+              }
+              onChangeOpacity={(key, val) =>
+                state.setRegionOpacity(prev => ({ ...prev, [key]: val }))
+              }
+              isDemoMode={state.isDemoMode}
+            />
+          )}
+
+          {state.activePage === 'evaluation' && (
+            <EvaluationPage
+              metrics={state.provenance?.metrics}
+              labelCounts={state.labelCounts}
+              expertCounts={state.expertCounts}
+              spacing={state.spacing}
+              onOpenUpload={() => state.setIsUploadModalOpen(true)}
+              isDemoMode={state.isDemoMode}
+            />
+          )}
+
+          {state.activePage === 'reports' && (
+            <ReportsPage
+              provenance={state.provenance}
+              reliabilityInfo={state.modelReliability}
+            />
+          )}
+
+          {state.activePage === 'modelInfo' && (
+            <ModelInfoPage
+              reliabilityInfo={state.modelReliability}
+              metrics={state.provenance?.metrics}
+              onConnectBackend={state.checkBackendHealth}
+            />
+          )}
+
+          {state.activePage === 'settings' && (
+            <SettingsPage
+              backendUrl={state.backendUrl}
+              onUpdateBackendUrl={state.setBackendUrl}
+              backendStatus={state.backendStatus}
+              backendError={state.backendError}
+              onCheckBackend={state.checkBackendHealth}
+            />
+          )}
+        </main>
+      </div>
+
+      {/* 4. Modals */}
+      <NiftiUploadModal
+        isOpen={state.isUploadModalOpen}
+        onClose={() => state.setIsUploadModalOpen(false)}
+        sequences={state.uploadedSequences}
+        onUploadFile={state.handleUploadFile}
+        onRemoveSequence={state.handleRemoveSequence}
+        onConfirmLoad={() => {
+          // Loaded sequences are already updated in state
+        }}
+      />
+
+      <HelpGuideModal
+        isOpen={state.isHelpModalOpen}
+        onClose={() => state.setIsHelpModalOpen(false)}
+      />
+    </div>
+  );
+};
+
+export default App;
