@@ -23,6 +23,7 @@ import {
   Zap,
 } from 'lucide-react';
 import Antigravity from '../components/animations/Antigravity';
+import { ShowcaseBrain3D } from '../components/viewer/ShowcaseBrain3D';
 
 interface LandingPageProps {
   onLaunchWorkstation: () => void;
@@ -40,7 +41,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   activeModelName = 'MONAI SegResNet (BraTS 2023)',
 }) => {
   // Interactive preview state for the hero showcase card
-  const [previewPlane, setPreviewPlane] = useState<'axial' | 'coronal' | 'sagittal'>('axial');
+  const [previewPlane, setPreviewPlane] = useState<'3d' | 'axial' | 'coronal' | 'sagittal'>('3d');
   const [showWT, setShowWT] = useState<boolean>(true);
   const [showTC, setShowTC] = useState<boolean>(true);
   const [showET, setShowET] = useState<boolean>(true);
@@ -259,7 +260,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
                 {/* Plane selector tabs */}
                 <div className="flex items-center gap-1 bg-white p-1 rounded-lg border border-slate-200 text-xs font-medium">
-                  {(['axial', 'coronal', 'sagittal'] as const).map(plane => (
+                  {(['3d', 'axial', 'coronal', 'sagittal'] as const).map(plane => (
                     <button
                       key={plane}
                       onClick={() => setPreviewPlane(plane)}
@@ -269,7 +270,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
-                      {plane}
+                      {plane === '3d' ? '3D Brain' : plane}
                     </button>
                   ))}
                 </div>
@@ -277,53 +278,96 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
               {/* Showcase Body */}
               <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200">
-                {/* Visual Viewport Simulation */}
-                <div className="md:col-span-2 p-6 bg-slate-900 relative min-h-[360px] flex items-center justify-center overflow-hidden">
-                  {/* Grid Lines */}
-                  <div className="absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:16px_16px] opacity-40" />
+                {/* Visual Viewport Simulation: 3D Rotating Real Human Brain or 2D Orthogonal Slice */}
+                <div className="md:col-span-2 p-4 bg-slate-950 relative min-h-[380px] flex items-center justify-center overflow-hidden">
+                  {/* Subtle Grid Lines Background */}
+                  <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-50" />
 
-                  {/* Simulated 2D Slice & Tumour Rendering */}
-                  <div className="relative w-64 h-64 rounded-full border border-slate-700 flex items-center justify-center bg-slate-950/90 shadow-2xl">
-                    {/* Simulated Brain Outline */}
-                    <div className="absolute inset-4 rounded-full border border-dashed border-slate-600/60" />
+                  {previewPlane === '3d' ? (
+                    /* Real 3D Rotating Anatomical Human Brain with Small Identifiable Tumour */
+                    <div className="relative w-full h-[360px] flex items-center justify-center">
+                      <ShowcaseBrain3D
+                        showWT={showWT}
+                        showTC={showTC}
+                        showET={showET}
+                        className="w-full h-full"
+                      />
 
-                    {/* Tumour Overlays Toggleable */}
-                    {showWT && (
-                      <div className="absolute top-16 right-16 w-28 h-28 rounded-full bg-cyan-500/25 border-2 border-cyan-400 animate-pulse flex items-center justify-center transition-all">
-                        {showTC && (
-                          <div className="w-20 h-20 rounded-full bg-violet-500/35 border-2 border-violet-400 flex items-center justify-center">
-                            {showET && (
-                              <div className="w-10 h-10 rounded-full bg-amber-500/50 border-2 border-amber-400" />
-                            )}
-                          </div>
-                        )}
+                      {/* 3D Status Overlay Badge */}
+                      <div className="absolute top-3 left-3 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-700/80 text-[11px] font-mono text-slate-300 pointer-events-none">
+                        <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                        <span className="font-semibold text-white">3D Cortex Reconstruction</span>
+                        <span className="text-slate-500">•</span>
+                        <span className="text-cyan-300">Auto-Rotating (Drag to Orbit)</span>
                       </div>
-                    )}
 
-                    {/* Crosshair indicator */}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="w-full h-px bg-cyan-400/30" />
-                      <div className="h-full w-px bg-cyan-400/30 absolute" />
+                      {/* Small Identifiable Tumour Callout Card */}
+                      <div className="absolute bottom-3 left-3 bg-slate-900/90 backdrop-blur-md px-3 py-2 rounded-lg border border-cyan-500/40 text-[11px] font-mono shadow-lg pointer-events-none space-y-0.5">
+                        <div className="flex items-center gap-2 text-cyan-300 font-semibold">
+                          <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                          <span>Identified Nodule: Right Subcortical Parietal</span>
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          Coordinates: X: +14.0 mm, Y: +6.0 mm, Z: +8.0 mm
+                        </div>
+                      </div>
+
+                      {/* Anatomical Axis Guides */}
+                      <span className="absolute top-3 right-3 text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-slate-800/80 text-slate-400 border border-slate-700">
+                        SUPERIOR (S)
+                      </span>
+                      <span className="absolute bottom-3 right-3 text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-slate-800/80 text-slate-400 border border-slate-700">
+                        INFERIOR (I)
+                      </span>
                     </div>
+                  ) : (
+                    /* Simulated 2D Orthogonal Slice View */
+                    <div className="relative w-64 h-64 rounded-full border border-slate-700 flex items-center justify-center bg-slate-950/90 shadow-2xl">
+                      {/* Simulated Brain Outline */}
+                      <div className="absolute inset-4 rounded-full border border-dashed border-slate-600/60" />
 
-                    <div className="absolute bottom-3 left-3 text-[11px] font-mono text-cyan-300 bg-slate-900/90 px-2 py-1 rounded border border-slate-700">
-                      Crosshair: (X: +18.0 mm, Y: +6.0 mm, Z: +4.0 mm)
+                      {/* Tumour Overlays Toggleable */}
+                      {showWT && (
+                        <div className="absolute top-16 right-16 w-28 h-28 rounded-full bg-cyan-500/25 border-2 border-cyan-400 animate-pulse flex items-center justify-center transition-all">
+                          {showTC && (
+                            <div className="w-20 h-20 rounded-full bg-violet-500/35 border-2 border-violet-400 flex items-center justify-center">
+                              {showET && (
+                                <div className="w-10 h-10 rounded-full bg-amber-500/50 border-2 border-amber-400" />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Crosshair indicator */}
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-full h-px bg-cyan-400/30" />
+                        <div className="h-full w-px bg-cyan-400/30 absolute" />
+                      </div>
+
+                      <div className="absolute bottom-3 left-3 text-[11px] font-mono text-cyan-300 bg-slate-900/90 px-2 py-1 rounded border border-slate-700">
+                        Crosshair: (X: +14.0 mm, Y: +6.0 mm, Z: +8.0 mm)
+                      </div>
                     </div>
-                  </div>
+                  )}
 
-                  {/* Orientation Badges */}
-                  <span className="absolute top-3 left-1/2 -translate-x-1/2 text-xs font-mono font-bold text-slate-400">
-                    {previewPlane === 'axial' ? 'ANTERIOR (A)' : 'SUPERIOR (S)'}
-                  </span>
-                  <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs font-mono font-bold text-slate-400">
-                    {previewPlane === 'axial' ? 'POSTERIOR (P)' : 'INFERIOR (I)'}
-                  </span>
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-slate-400">
-                    RIGHT (R)
-                  </span>
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-slate-400">
-                    LEFT (L)
-                  </span>
+                  {/* Orientation Badges for 2D Slice Mode */}
+                  {previewPlane !== '3d' && (
+                    <>
+                      <span className="absolute top-3 left-1/2 -translate-x-1/2 text-xs font-mono font-bold text-slate-400">
+                        {previewPlane === 'axial' ? 'ANTERIOR (A)' : 'SUPERIOR (S)'}
+                      </span>
+                      <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs font-mono font-bold text-slate-400">
+                        {previewPlane === 'axial' ? 'POSTERIOR (P)' : 'INFERIOR (I)'}
+                      </span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-slate-400">
+                        RIGHT (R)
+                      </span>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-slate-400">
+                        LEFT (L)
+                      </span>
+                    </>
+                  )}
                 </div>
 
                 {/* Right Measurement Panel in Showcase */}
