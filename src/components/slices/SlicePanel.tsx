@@ -311,7 +311,7 @@ export const SlicePanel: React.FC<SlicePanelProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`relative bg-[#090C16] border border-[#1E293B] rounded-xl overflow-hidden flex flex-col select-none group ${className}`}
+      className={`relative bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-xs flex flex-col select-none group ${className}`}
       onContextMenu={e => e.preventDefault()}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
@@ -320,18 +320,18 @@ export const SlicePanel: React.FC<SlicePanelProps> = ({
       onWheel={handleWheel}
     >
       {/* Panel Header */}
-      <div className="h-8 bg-[#0D1220] border-b border-[#1E293B] px-3 flex items-center justify-between text-xs z-10">
+      <div className="h-8 bg-slate-50 border-b border-slate-200/80 px-3 flex items-center justify-between text-xs z-10">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-cyan-400" />
-          <span className="font-semibold text-slate-200 tracking-wide font-mono text-[11px] uppercase">
+          <span className="w-2 h-2 rounded-full bg-sky-500" />
+          <span className="font-semibold text-slate-800 tracking-wide font-mono text-[11px] uppercase">
             {title}
           </span>
-          <span className="text-slate-400 font-mono text-[10px]">
+          <span className="text-slate-500 font-mono text-[10px]">
             Slice {currentSliceIndex + 1}/{maxSlices}
           </span>
         </div>
 
-        <div className="flex items-center gap-2 text-slate-400 font-mono text-[10px]">
+        <div className="flex items-center gap-2 text-slate-500 font-mono text-[10px]">
           <span>{sliceWorldMm.toFixed(1)} mm</span>
           <div className="flex items-center gap-0.5 ml-1">
             <button
@@ -341,7 +341,7 @@ export const SlicePanel: React.FC<SlicePanelProps> = ({
                 else if (plane === 'coronal') onUpdateCrosshair({ j: next });
                 else if (plane === 'sagittal') onUpdateCrosshair({ i: next });
               }}
-              className="p-0.5 hover:text-cyan-300"
+              className="p-0.5 hover:text-sky-600 text-slate-500 transition"
               title="Previous slice"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
@@ -353,7 +353,7 @@ export const SlicePanel: React.FC<SlicePanelProps> = ({
                 else if (plane === 'coronal') onUpdateCrosshair({ j: next });
                 else if (plane === 'sagittal') onUpdateCrosshair({ i: next });
               }}
-              className="p-0.5 hover:text-cyan-300"
+              className="p-0.5 hover:text-sky-600 text-slate-500 transition"
               title="Next slice"
             >
               <ChevronRight className="w-3.5 h-3.5" />
@@ -363,7 +363,7 @@ export const SlicePanel: React.FC<SlicePanelProps> = ({
       </div>
 
       {/* Main Canvas Container with Pan & Zoom */}
-      <div className="relative flex-1 flex items-center justify-center overflow-hidden cursor-crosshair bg-[#06080E]">
+      <div className="relative flex-1 flex items-center justify-center overflow-hidden cursor-crosshair bg-slate-950">
         <div
           style={{
             transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
@@ -411,24 +411,24 @@ export const SlicePanel: React.FC<SlicePanelProps> = ({
         </div>
 
         {/* Hover Mini-Toolbar (Bottom Right) */}
-        <div className="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/90 border border-slate-700/80 rounded-md p-0.5 backdrop-blur-sm z-20">
+        <div className="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 border border-slate-200/90 rounded-lg p-1 backdrop-blur-sm shadow-md z-20">
           <button
             onClick={() => setZoom(prev => Math.min(4.0, prev * 1.15))}
-            className="p-1 hover:text-cyan-300 text-slate-300"
+            className="p-1 hover:text-sky-600 text-slate-600"
             title="Zoom In (Shift+Wheel)"
           >
             <ZoomIn className="w-3 h-3" />
           </button>
           <button
             onClick={() => setZoom(prev => Math.max(0.5, prev * 0.85))}
-            className="p-1 hover:text-cyan-300 text-slate-300"
+            className="p-1 hover:text-sky-600 text-slate-600"
             title="Zoom Out (Shift+Wheel)"
           >
             <ZoomOut className="w-3 h-3" />
           </button>
           <button
             onClick={resetPanZoom}
-            className="p-1 hover:text-cyan-300 text-slate-300"
+            className="p-1 hover:text-sky-600 text-slate-600"
             title="Reset Pan & Zoom"
           >
             <RotateCcw className="w-3 h-3" />
@@ -437,7 +437,7 @@ export const SlicePanel: React.FC<SlicePanelProps> = ({
       </div>
 
       {/* Slice slider scrubber */}
-      <div className="h-6 bg-[#0D1220] border-t border-[#1E293B] px-3 flex items-center gap-2 z-10">
+      <div className="h-7 bg-slate-50 border-t border-slate-200/80 px-3 flex items-center gap-2 z-10">
         <input
           type="range"
           min="0"
@@ -449,7 +449,7 @@ export const SlicePanel: React.FC<SlicePanelProps> = ({
             else if (plane === 'coronal') onUpdateCrosshair({ j: val });
             else if (plane === 'sagittal') onUpdateCrosshair({ i: val });
           }}
-          className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer"
+          className="w-full h-1.5 bg-slate-200 accent-sky-600 rounded-lg appearance-none cursor-pointer"
         />
       </div>
     </div>

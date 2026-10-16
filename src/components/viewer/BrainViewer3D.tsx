@@ -426,7 +426,7 @@ export const BrainViewer3D: React.FC<BrainViewer3DProps> = ({
 
       {/* Top Overlay Badge */}
       <div className="absolute top-3 left-3 flex items-center gap-2 z-10 pointer-events-none">
-        <div className="px-2.5 py-1 rounded-md bg-[#0F1423]/90 border border-slate-700/60 backdrop-blur-md text-[11px] font-mono text-slate-300 flex items-center gap-1.5 shadow-md">
+        <div className="px-2.5 py-1 rounded-md bg-white/90 border border-slate-200/90 backdrop-blur-md text-[11px] font-mono text-slate-800 font-semibold flex items-center gap-1.5 shadow-sm">
           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
           <span>3D BRAIN RECONSTRUCTION</span>
         </div>
@@ -444,8 +444,8 @@ export const BrainViewer3D: React.FC<BrainViewer3DProps> = ({
           onClick={() => onToggleVisibility('wireframe')}
           className={`p-2 rounded-lg border text-xs font-medium transition backdrop-blur-md ${
             visibility.wireframe
-              ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm'
-              : 'bg-slate-900/80 text-slate-400 border-slate-700 hover:text-slate-200'
+              ? 'bg-sky-50 text-sky-700 border-sky-300 font-semibold shadow-2xs'
+              : 'bg-white/90 text-slate-600 border-slate-200 hover:text-slate-900 hover:bg-slate-50 shadow-2xs'
           }`}
           title="Toggle wireframe mesh mode"
         >
@@ -456,8 +456,8 @@ export const BrainViewer3D: React.FC<BrainViewer3DProps> = ({
           onClick={() => onToggleVisibility('crosshair')}
           className={`p-2 rounded-lg border text-xs font-medium transition backdrop-blur-md ${
             visibility.crosshair
-              ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm'
-              : 'bg-slate-900/80 text-slate-400 border-slate-700 hover:text-slate-200'
+              ? 'bg-sky-50 text-sky-700 border-sky-300 font-semibold shadow-2xs'
+              : 'bg-white/90 text-slate-600 border-slate-200 hover:text-slate-900 hover:bg-slate-50 shadow-2xs'
           }`}
           title="Toggle 3D crosshair cursor"
         >
@@ -468,8 +468,8 @@ export const BrainViewer3D: React.FC<BrainViewer3DProps> = ({
           onClick={() => setShowClippingControls(prev => !prev)}
           className={`p-2 rounded-lg border text-xs font-medium transition backdrop-blur-md ${
             clipping.enabled || showClippingControls
-              ? 'bg-violet-500/20 text-violet-300 border-violet-500/40 shadow-sm'
-              : 'bg-slate-900/80 text-slate-400 border-slate-700 hover:text-slate-200'
+              ? 'bg-violet-50 text-violet-700 border-violet-300 font-semibold shadow-2xs'
+              : 'bg-white/90 text-slate-600 border-slate-200 hover:text-slate-900 hover:bg-slate-50 shadow-2xs'
           }`}
           title="Toggle 3D anatomical cutaway / clipping plane"
         >
@@ -478,7 +478,7 @@ export const BrainViewer3D: React.FC<BrainViewer3DProps> = ({
 
         <button
           onClick={resetCamera}
-          className="p-2 rounded-lg bg-slate-900/80 border border-slate-700 text-slate-400 hover:text-slate-200 transition backdrop-blur-md"
+          className="p-2 rounded-lg bg-white/90 border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition backdrop-blur-md shadow-2xs"
           title="Reset 3D camera orientation and zoom"
         >
           <RotateCcw className="w-3.5 h-3.5" />
@@ -486,7 +486,7 @@ export const BrainViewer3D: React.FC<BrainViewer3DProps> = ({
 
         <button
           onClick={() => setShowLegend(prev => !prev)}
-          className="px-2.5 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700 text-slate-300 hover:text-cyan-300 text-xs font-mono transition backdrop-blur-md"
+          className="px-2.5 py-1.5 rounded-lg bg-white/90 border border-slate-200 text-slate-700 hover:text-sky-600 hover:bg-slate-50 text-xs font-mono transition backdrop-blur-md shadow-2xs"
         >
           {showLegend ? 'Hide Legend' : 'Show Legend'}
         </button>
@@ -494,8 +494,8 @@ export const BrainViewer3D: React.FC<BrainViewer3DProps> = ({
 
       {/* Clipping / Cutaway Controls Panel */}
       {showClippingControls && (
-        <div className="absolute top-14 right-3 w-64 bg-[#0F1423]/95 backdrop-blur-md border border-[#1E293B] rounded-xl p-3 z-20 text-xs shadow-2xl">
-          <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
+        <div className="absolute top-14 right-3 w-64 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl p-4 z-20 text-xs shadow-xl text-slate-800">
+          <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-200">
             <span className="font-semibold text-slate-200 flex items-center gap-1.5">
               <Scissors className="w-3.5 h-3.5 text-violet-400" />
               Anatomical Cutaway Plane
@@ -505,7 +505,7 @@ export const BrainViewer3D: React.FC<BrainViewer3DProps> = ({
               className={`px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
                 clipping.enabled
                   ? 'bg-violet-500/30 text-violet-300 border border-violet-500/50'
-                  : 'bg-slate-800 text-slate-400 border border-slate-700'
+                  : 'bg-slate-100 text-slate-500 border border-slate-200'
               }`}
             >
               {clipping.enabled ? 'ACTIVE' : 'OFF'}
@@ -526,7 +526,7 @@ export const BrainViewer3D: React.FC<BrainViewer3DProps> = ({
                 disabled={!clipping.enabled}
                 value={clipping.axial}
                 onChange={e => onChangeClipping({ ...clipping, axial: parseFloat(e.target.value) })}
-                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer disabled:opacity-40"
+                className="w-full h-1.5 bg-slate-200 accent-sky-600 rounded-lg appearance-none cursor-pointer disabled:opacity-40"
               />
             </div>
             <p className="text-[10px] text-slate-400 italic leading-tight">
@@ -549,7 +549,7 @@ export const BrainViewer3D: React.FC<BrainViewer3DProps> = ({
       )}
 
       {/* Orbit Interaction Hint (Bottom Right) */}
-      <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded bg-[#0A0E18]/80 border border-slate-800/60 backdrop-blur-sm text-[10px] font-mono text-slate-400 pointer-events-none flex items-center gap-3">
+      <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded bg-white/90 border border-slate-200/80 backdrop-blur-sm text-[10px] font-mono text-slate-600 pointer-events-none flex items-center gap-3 shadow-2xs">
         <span>Left Drag: Orbit</span>
         <span>•</span>
         <span>Wheel: Zoom</span>

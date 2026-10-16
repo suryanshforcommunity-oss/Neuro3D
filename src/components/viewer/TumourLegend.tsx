@@ -48,10 +48,10 @@ export const TumourLegend: React.FC<TumourLegendProps> = ({
   ];
 
   return (
-    <div className="bg-[#0E1322]/95 backdrop-blur-md border border-[#1E293B] rounded-xl p-3 text-xs select-none shadow-xl">
-      <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#1E293B]">
-        <div className="flex items-center gap-1.5 font-semibold text-slate-200">
-          <Layers className="w-3.5 h-3.5 text-cyan-400" />
+    <div className="bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl p-3.5 text-xs select-none shadow-lg text-slate-800">
+      <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-200">
+        <div className="flex items-center gap-1.5 font-semibold text-slate-800">
+          <Layers className="w-3.5 h-3.5 text-sky-600" />
           <span>Tumour Region Overlays</span>
         </div>
         <span className="text-[10px] font-mono text-slate-400 flex items-center gap-1">
@@ -61,17 +61,17 @@ export const TumourLegend: React.FC<TumourLegendProps> = ({
       </div>
 
       {/* Crucial UI note about nested overlapping definition */}
-      <div className="p-2 mb-2.5 rounded bg-slate-900/80 border border-slate-800 text-[10px] text-slate-400 leading-tight">
+      <div className="p-2 mb-2.5 rounded bg-sky-50/80 border border-sky-200/80 text-[10px] text-sky-900 leading-tight">
         <strong className="text-cyan-300">Nested Definition:</strong> Regions overlap hierarchically according to BraTS guidelines. WT encloses TC, which encloses ET. They are not disjoint compartments.
       </div>
 
       <div className="space-y-2">
         {/* Brain Surface Toggle */}
-        <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/50 border border-slate-800/80">
+        <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200/80">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-slate-500/80 border border-slate-400" />
             <div>
-              <span className="text-slate-300 font-medium text-xs">Cerebral Cortex (3D Surface)</span>
+              <span className="text-slate-800 font-semibold text-xs">Cerebral Cortex (3D Surface)</span>
               <span className="block text-[10px] text-slate-400 font-mono">Anatomical brain boundary</span>
             </div>
           </div>
@@ -84,14 +84,14 @@ export const TumourLegend: React.FC<TumourLegendProps> = ({
                 step="0.05"
                 value={opacity.brainSurface}
                 onChange={e => onChangeOpacity('brainSurface', parseFloat(e.target.value))}
-                className="w-16 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer"
+                className="w-16 h-1 bg-slate-200 accent-sky-600 rounded-lg appearance-none cursor-pointer"
                 title={`Opacity: ${(opacity.brainSurface * 100).toFixed(0)}%`}
               />
             )}
             <button
               onClick={() => onToggleVisibility('brainSurface')}
               className={`p-1 rounded ${
-                visibility.brainSurface ? 'text-cyan-400 hover:text-cyan-300' : 'text-slate-600 hover:text-slate-400'
+                visibility.brainSurface ? 'text-sky-600 hover:text-cyan-300' : 'text-slate-600 hover:text-slate-400'
               }`}
               title={visibility.brainSurface ? 'Hide cortex surface' : 'Show cortex surface'}
             >
@@ -109,7 +109,7 @@ export const TumourLegend: React.FC<TumourLegendProps> = ({
             <div
               key={r.key}
               className={`p-2 rounded-lg border transition ${
-                isVisible ? 'bg-slate-900/60 ' + r.borderClass : 'bg-slate-950/40 border-slate-800/60 opacity-60'
+                isVisible ? 'bg-slate-50/90 border border-slate-200 shadow-2xs' : 'bg-slate-50/40 border-slate-200/40 opacity-60'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -119,7 +119,7 @@ export const TumourLegend: React.FC<TumourLegendProps> = ({
                     style={{ backgroundColor: r.colorHex }}
                   />
                   <div>
-                    <span className="font-semibold text-slate-200 text-xs">{r.name}</span>
+                    <span className="font-semibold text-slate-800 text-xs">{r.name}</span>
                     <span className="block text-[10px] text-slate-400 font-mono">{r.definition}</span>
                   </div>
                 </div>
@@ -133,14 +133,14 @@ export const TumourLegend: React.FC<TumourLegendProps> = ({
                       step="0.05"
                       value={curOpacity}
                       onChange={e => onChangeOpacity(r.key, parseFloat(e.target.value))}
-                      className="w-16 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer"
+                      className="w-16 h-1 bg-slate-200 accent-sky-600 rounded-lg appearance-none cursor-pointer"
                       title={`Opacity: ${(curOpacity * 100).toFixed(0)}%`}
                     />
                   )}
                   <button
                     onClick={() => onToggleVisibility(r.key)}
                     className={`p-1 rounded ${
-                      isVisible ? 'text-slate-200 hover:text-white' : 'text-slate-600 hover:text-slate-400'
+                      isVisible ? 'text-slate-800 hover:text-white' : 'text-slate-600 hover:text-slate-400'
                     }`}
                     title={isVisible ? `Hide ${r.name}` : `Show ${r.name}`}
                   >

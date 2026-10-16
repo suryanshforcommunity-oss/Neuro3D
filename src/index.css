@@ -5,17 +5,16 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: #080B12;
-  color: #E2E8F0;
+  background-color: #F8FAFC;
+  color: #1E293B;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
-  user-select: none;
 }
 
 /* Custom workstation scrollbar */
@@ -24,14 +23,14 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0D111A;
+  background: #F1F5F9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1E293B;
+  background: #CBD5E1;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #94A3B8;
 }
 
 /* Subtle glow utilities */

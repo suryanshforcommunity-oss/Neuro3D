@@ -52,7 +52,7 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-[#080B12] text-slate-100 overflow-hidden font-sans">
+    <div className="flex flex-col h-screen w-screen bg-slate-100/90 text-slate-800 overflow-hidden font-sans">
       {/* 1. Regulatory Mandatory Disclaimer Banner */}
       <DisclaimerBanner />
 
@@ -83,7 +83,7 @@ export const App: React.FC = () => {
         />
 
         {/* Dynamic Center Workstation Page */}
-        <main className="flex-1 flex flex-col overflow-hidden bg-[#080B12]">
+        <main className="flex-1 flex flex-col overflow-hidden bg-slate-100/60">
           {state.activePage === 'workspace' && (
             <WorkspacePage
               crosshair={state.crosshair}

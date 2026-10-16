@@ -32,17 +32,17 @@ export const RegionVolumeCards: React.FC<RegionVolumeCardsProps> = ({
   }, [labelCounts, spacing, expertCounts]);
 
   return (
-    <div className="space-y-3 select-none">
+    <div className="space-y-2.5 select-none">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-cyan-400" />
-          <h3 className="font-semibold text-slate-200 text-xs uppercase tracking-wider font-mono">
+          <Activity className="w-4 h-4 text-sky-600" />
+          <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider font-mono">
             Tumour Volumetric Quantification
           </h3>
         </div>
         <button
           onClick={() => setShowDetails(true)}
-          className="flex items-center gap-1 text-[11px] font-mono text-cyan-400 hover:text-cyan-300 transition"
+          className="flex items-center gap-1 text-[11px] font-mono text-sky-600 hover:text-sky-700 font-medium transition"
         >
           <HelpCircle className="w-3.5 h-3.5" />
           <span>Formula & Spacing</span>
@@ -50,7 +50,7 @@ export const RegionVolumeCards: React.FC<RegionVolumeCardsProps> = ({
       </div>
 
       {/* Grid of Region Cards: WT, TC, ET */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {regionSummaries.map(item => {
           const hasExpert = item.expertVolumeMl !== undefined;
           const diffMl = item.differenceMl ?? 0;
@@ -59,7 +59,7 @@ export const RegionVolumeCards: React.FC<RegionVolumeCardsProps> = ({
           return (
             <div
               key={item.region}
-              className="bg-[#0F1424] border border-[#1E293B] rounded-xl p-3.5 hover:border-slate-700 transition relative overflow-hidden group shadow-md"
+              className="bg-white border border-slate-200/90 rounded-2xl p-4 hover:border-sky-300 hover:shadow-md transition-all relative overflow-hidden group shadow-xs"
             >
               {/* Color accent header strip */}
               <div
@@ -67,9 +67,9 @@ export const RegionVolumeCards: React.FC<RegionVolumeCardsProps> = ({
                 style={{ backgroundColor: item.color }}
               />
 
-              <div className="flex items-center justify-between mb-1 mt-0.5">
-                <span className="font-semibold text-slate-200 text-xs">{item.displayName}</span>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+              <div className="flex items-center justify-between mb-1.5 mt-0.5">
+                <span className="font-semibold text-slate-800 text-xs">{item.displayName}</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200">
                   {item.definition}
                 </span>
               </div>
@@ -77,32 +77,32 @@ export const RegionVolumeCards: React.FC<RegionVolumeCardsProps> = ({
               {/* Main Volume readout */}
               <div className="my-2">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-bold font-mono tracking-tight text-white">
+                  <span className="text-2xl font-bold font-mono tracking-tight text-slate-900">
                     {item.volumeMl.toFixed(2)}
                   </span>
-                  <span className="text-xs font-mono font-medium text-slate-400">mL (cm³)</span>
+                  <span className="text-xs font-mono font-medium text-slate-500">mL (cm³)</span>
                 </div>
-                <div className="text-[10px] text-slate-400 font-mono">
+                <div className="text-[10px] text-slate-500 font-mono mt-0.5">
                   {item.voxelCount.toLocaleString()} voxels
                 </div>
               </div>
 
               {/* Expert mask comparison if available */}
               {hasExpert ? (
-                <div className="mt-2.5 pt-2 border-t border-slate-800/80 space-y-1 text-[11px] font-mono">
-                  <div className="flex justify-between text-slate-400">
+                <div className="mt-2.5 pt-2 border-t border-slate-100 space-y-1 text-[11px] font-mono">
+                  <div className="flex justify-between text-slate-500">
                     <span>Expert Ground Truth:</span>
-                    <span className="text-slate-200 font-semibold">{item.expertVolumeMl?.toFixed(2)} mL</span>
+                    <span className="text-slate-800 font-semibold">{item.expertVolumeMl?.toFixed(2)} mL</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-400">Discrepancy:</span>
+                    <span className="text-slate-500">Discrepancy:</span>
                     <span
                       className={`flex items-center gap-0.5 font-semibold ${
                         Math.abs(diffMl) < 0.5
-                          ? 'text-emerald-400'
+                          ? 'text-emerald-600'
                           : isOver
-                          ? 'text-amber-400'
-                          : 'text-rose-400'
+                          ? 'text-amber-600'
+                          : 'text-rose-600'
                       }`}
                     >
                       {isOver ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
@@ -111,7 +111,7 @@ export const RegionVolumeCards: React.FC<RegionVolumeCardsProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className="mt-2.5 pt-2 border-t border-slate-800/80 text-[10px] text-slate-400 font-mono">
+                <div className="mt-2.5 pt-2 border-t border-slate-100 text-[10px] text-slate-400 font-mono">
                   No expert ground truth mask loaded for comparison
                 </div>
               )}

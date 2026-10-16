@@ -54,12 +54,12 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   ];
 
   return (
-    <header className="h-14 bg-[#0A0E18] border-b border-[#1E293B] px-4 flex items-center justify-between text-sm select-none">
+    <header className="h-14 bg-white/85 backdrop-blur-md border-b border-slate-200/80 px-4 flex items-center justify-between text-sm select-none shadow-xs text-slate-800">
       {/* Left section: Study info and status */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-slate-400 text-xs font-mono font-medium">CASE:</span>
-          <span className="font-mono text-xs font-semibold text-cyan-300 bg-slate-900/80 px-2 py-0.5 rounded border border-cyan-500/20">
+          <span className="text-slate-500 text-xs font-mono font-medium">CASE:</span>
+          <span className="font-mono text-xs font-semibold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
             {studyId}
           </span>
         </div>
@@ -67,38 +67,38 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         {/* Data mode badge */}
         {isDemoMode ? (
           <Badge variant="amber" size="sm" className="hidden sm:inline-flex">
-            <Database className="w-3 h-3 text-amber-400" />
+            <Database className="w-3 h-3 text-amber-500" />
             DEMO PREVIEW DATA
           </Badge>
         ) : (
           <Badge variant="cyan" size="sm" className="hidden sm:inline-flex">
-            <Database className="w-3 h-3 text-cyan-400" />
+            <Database className="w-3 h-3 text-sky-600" />
             RESEARCH DATA
           </Badge>
         )}
 
-        {/* Backend health indicator - NEVER says "AI ready" unless confirmed connected */}
+        {/* Backend health indicator */}
         <div
           onClick={onCheckBackend}
           title={`Backend status (${backendUrl}). Click to re-check connection.`}
-          className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-900/90 border border-slate-800 text-[11px] font-mono cursor-pointer hover:border-slate-700 transition"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-[11px] font-mono cursor-pointer hover:border-slate-300 transition"
         >
           <Server
             className={`w-3.5 h-3.5 ${
               backendStatus === 'connected'
-                ? 'text-emerald-400'
+                ? 'text-emerald-500'
                 : backendStatus === 'connecting'
-                ? 'text-amber-400 animate-pulse'
-                : 'text-rose-400'
+                ? 'text-amber-500 animate-pulse'
+                : 'text-rose-500'
             }`}
           />
           <span
             className={
               backendStatus === 'connected'
-                ? 'text-emerald-400 font-medium'
+                ? 'text-emerald-700 font-medium'
                 : backendStatus === 'connecting'
-                ? 'text-amber-300'
-                : 'text-slate-400'
+                ? 'text-amber-700'
+                : 'text-slate-500'
             }
           >
             {backendStatus === 'connected'
@@ -111,9 +111,9 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
       </div>
 
       {/* Middle section: Sequence selector */}
-      <div className="hidden lg:flex items-center bg-[#101522] p-1 rounded-lg border border-[#1E293B]">
-        <span className="text-[10px] uppercase font-mono text-slate-400 px-2 flex items-center gap-1">
-          <Layers className="w-3 h-3 text-cyan-400" />
+      <div className="hidden lg:flex items-center bg-slate-100/80 p-1 rounded-xl border border-slate-200/90 shadow-2xs">
+        <span className="text-[10px] uppercase font-mono text-slate-500 px-2 flex items-center gap-1">
+          <Layers className="w-3 h-3 text-sky-600" />
           Sequence:
         </span>
         {sequences.map(seq => (
@@ -121,10 +121,10 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             key={seq.id}
             onClick={() => onSelectSequence(seq.id)}
             title={seq.desc}
-            className={`px-3 py-1 rounded text-xs font-mono font-medium transition ${
+            className={`px-3 py-1 rounded-lg text-xs font-mono font-medium transition ${
               activeSequence === seq.id
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                ? 'bg-sky-600 text-white font-semibold shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
             }`}
           >
             {seq.label}
@@ -135,14 +135,14 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
       {/* Right section: Coordinates & Actions */}
       <div className="flex items-center gap-2">
         {/* Real-time canonical coordinates display */}
-        <div className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded bg-[#101522] border border-[#1E293B] text-xs font-mono">
-          <Crosshair className="w-3.5 h-3.5 text-cyan-400" />
-          <span className="text-slate-400">
-            Voxel: <strong className="text-slate-200">({crosshair.i}, {crosshair.j}, {crosshair.k})</strong>
+        <div className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-xs font-mono">
+          <Crosshair className="w-3.5 h-3.5 text-sky-600" />
+          <span className="text-slate-500">
+            Voxel: <strong className="text-slate-900">({crosshair.i}, {crosshair.j}, {crosshair.k})</strong>
           </span>
-          <span className="text-slate-600">|</span>
-          <span className="text-slate-400">
-            World: <strong className="text-cyan-300">({worldCoordinate.x.toFixed(1)}, {worldCoordinate.y.toFixed(1)}, {worldCoordinate.z.toFixed(1)}) mm</strong>
+          <span className="text-slate-300">|</span>
+          <span className="text-slate-500">
+            World: <strong className="text-sky-700 font-semibold">({worldCoordinate.x.toFixed(1)}, {worldCoordinate.y.toFixed(1)}, {worldCoordinate.z.toFixed(1)}) mm</strong>
           </span>
         </div>
 
@@ -150,18 +150,18 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         <button
           onClick={onLoadDemo}
           title="Reload synthetic research phantom preview"
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-violet-600/20 hover:bg-violet-600/30 text-violet-300 border border-violet-500/30 text-xs font-medium transition"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold transition"
         >
-          <Sparkles className="w-3.5 h-3.5 text-violet-400" />
+          <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
           <span className="hidden sm:inline">Load Demo Case</span>
         </button>
 
         {/* Upload Button */}
         <button
           onClick={onOpenUpload}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/30 text-xs font-medium transition"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white shadow-xs text-xs font-semibold transition"
         >
-          <UploadCloud className="w-3.5 h-3.5 text-cyan-400" />
+          <UploadCloud className="w-3.5 h-3.5 text-white" />
           <span className="hidden sm:inline">Upload NIfTI (4 seq)</span>
         </button>
 
@@ -169,7 +169,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         <button
           onClick={onResetView}
           title="Reset 3D camera and slice center"
-          className="p-1.5 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+          className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition shadow-2xs"
         >
           <RotateCcw className="w-4 h-4" />
         </button>
@@ -179,9 +179,9 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           <button
             onClick={onGoHome}
             title="Return to Product Overview & Landing Page"
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 text-xs font-medium transition"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-sky-600 hover:bg-slate-50 text-xs font-medium transition shadow-2xs"
           >
-            <Home className="w-3.5 h-3.5 text-sky-400" />
+            <Home className="w-3.5 h-3.5 text-sky-600" />
             <span className="hidden md:inline">Overview</span>
           </button>
         )}
@@ -190,7 +190,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         <button
           onClick={onOpenHelp}
           title="Workstation User Guide & Research Specifications"
-          className="p-1.5 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-cyan-300 hover:bg-slate-800 transition"
+          className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-sky-600 hover:bg-slate-50 transition shadow-2xs"
         >
           <HelpCircle className="w-4 h-4" />
         </button>

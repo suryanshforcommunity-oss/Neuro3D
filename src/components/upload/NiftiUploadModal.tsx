@@ -43,30 +43,30 @@ export const NiftiUploadModal: React.FC<NiftiUploadModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
       <div className="bg-[#0B0F1A] border border-[#1E293B] rounded-2xl w-full max-w-4xl max-h-[90vh] shadow-2xl flex flex-col overflow-hidden select-none">
         {/* Header */}
-        <div className="p-4 border-b border-[#1E293B] flex items-center justify-between bg-[#0E1322]">
+        <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-[#0E1322]">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center">
-              <UploadCloud className="w-4 h-4 text-cyan-400" />
+              <UploadCloud className="w-4 h-4 text-sky-600" />
             </div>
             <div>
-              <h2 className="font-semibold text-slate-100 text-sm">
+              <h2 className="font-semibold text-slate-900 text-sm">
                 4-Sequence NIfTI Study Upload & Pre-Validation
               </h2>
-              <p className="text-[11px] text-slate-400 font-mono">
+              <p className="text-[11px] text-slate-500 font-mono">
                 BraTS Protocol: T1, T1-Contrast, T2, FLAIR + Optional Expert Mask
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition"
+            className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-500 hover:text-slate-800 transition"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Security & Privacy Banner */}
-        <div className="px-5 py-2.5 bg-slate-900/60 border-b border-slate-800/80 flex items-center gap-2 text-xs text-slate-300">
+        <div className="px-5 py-2.5 bg-slate-900/60 border-b border-slate-800/80 flex items-center gap-2 text-xs text-slate-600">
           <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
           <span>
             <strong className="text-white">Client-Side Privacy Guarantee:</strong> All NIfTI headers and arrays are parsed directly in your local browser sandbox. No medical data is sent over the network until you explicitly trigger backend segmentation.
@@ -106,14 +106,14 @@ export const NiftiUploadModal: React.FC<NiftiUploadModalProps> = ({
 
         {/* Footer */}
         <div className="p-4 border-t border-[#1E293B] bg-[#0E1322] flex items-center justify-between text-xs font-mono">
-          <div className="text-slate-400">
+          <div className="text-slate-500">
             Loaded: <span className="text-cyan-300 font-semibold">{requiredLoaded}/4</span> required modalities
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+              className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-600 transition"
             >
               Cancel
             </button>

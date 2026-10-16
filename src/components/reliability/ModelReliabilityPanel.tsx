@@ -25,12 +25,12 @@ export const ModelReliabilityPanel: React.FC<ModelReliabilityPanelProps> = ({
   const hasExpert = metrics && metrics.hasExpertMask;
 
   return (
-    <div className="bg-[#0E1322] border border-[#1E293B] rounded-xl p-4 select-none space-y-4 shadow-xl">
+    <div className="bg-white border border-slate-200/90 rounded-2xl p-6 select-none space-y-5 shadow-xs">
       {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-[#1E293B]">
+      <div className="flex items-center justify-between pb-3 border-b border-slate-100">
         <div className="flex items-center gap-2">
-          <ShieldAlert className="w-4 h-4 text-cyan-400" />
-          <h3 className="font-semibold text-slate-100 text-sm">Model Reliability & Uncertainty</h3>
+          <ShieldAlert className="w-4 h-4 text-sky-600" />
+          <h3 className="font-semibold text-slate-800 text-sm font-semibold">Model Reliability & Uncertainty</h3>
         </div>
         <div className="flex items-center gap-2">
           <span
@@ -46,12 +46,12 @@ export const ModelReliabilityPanel: React.FC<ModelReliabilityPanelProps> = ({
 
       {/* Model Status Banner */}
       {!reliabilityInfo.backendConnected ? (
-        <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-xs text-slate-300 space-y-1.5">
+        <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-900 space-y-1.5">
           <div className="flex items-center gap-2 text-amber-400 font-semibold text-xs font-mono">
             <AlertTriangle className="w-4 h-4 flex-shrink-0" />
             <span>AI INFERENCE ENGINE STATUS</span>
           </div>
-          <p className="font-medium text-slate-200">
+          <p className="font-medium text-slate-800">
             “Model inference is not connected. No AI prediction is available.”
           </p>
           <p className="text-[11px] text-slate-400 leading-relaxed">
@@ -80,23 +80,23 @@ export const ModelReliabilityPanel: React.FC<ModelReliabilityPanelProps> = ({
 
       {/* Model Metadata Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs font-mono">
-        <div className="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
+        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 rounded-xl">
           <span className="text-[10px] text-slate-400 block mb-0.5">Model Name & Architecture</span>
-          <span className="font-semibold text-slate-200">{reliabilityInfo.modelName}</span>
+          <span className="font-semibold text-slate-800">{reliabilityInfo.modelName}</span>
           <span className="text-[10px] text-slate-400 block mt-0.5">{reliabilityInfo.architecture}</span>
         </div>
 
-        <div className="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
+        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 rounded-xl">
           <span className="text-[10px] text-slate-400 block mb-0.5">Version & License</span>
-          <span className="font-semibold text-slate-200">{reliabilityInfo.modelVersion}</span>
+          <span className="font-semibold text-slate-800">{reliabilityInfo.modelVersion}</span>
           <span className="text-[10px] text-slate-400 block mt-0.5">{reliabilityInfo.modelLicense}</span>
         </div>
       </div>
 
       {/* Preprocessing Pipeline */}
       <div>
-        <h4 className="text-xs font-semibold text-slate-200 mb-1.5 flex items-center gap-1.5 font-mono">
-          <Cpu className="w-3.5 h-3.5 text-cyan-400" />
+        <h4 className="text-xs font-semibold text-slate-800 mb-1.5 flex items-center gap-1.5 font-mono">
+          <Cpu className="w-3.5 h-3.5 text-sky-600" />
           Standard Preprocessing Pipeline (MONAI Workflow)
         </h4>
         <div className="space-y-1">
@@ -105,7 +105,7 @@ export const ModelReliabilityPanel: React.FC<ModelReliabilityPanelProps> = ({
               key={idx}
               className="flex items-center gap-2 text-[11px] text-slate-300 bg-slate-900/40 px-2.5 py-1 rounded border border-slate-800/60 font-mono"
             >
-              <span className="text-cyan-400 font-semibold">{idx + 1}.</span>
+              <span className="text-sky-600 font-semibold">{idx + 1}.</span>
               <span>{step}</span>
             </div>
           ))}
@@ -139,7 +139,7 @@ export const ModelReliabilityPanel: React.FC<ModelReliabilityPanelProps> = ({
 
       {/* Case-specific Evaluation Metrics */}
       <div className="p-3 rounded-xl bg-slate-900/70 border border-slate-800">
-        <h4 className="text-xs font-semibold text-slate-200 mb-1 flex items-center gap-1.5 font-mono">
+        <h4 className="text-xs font-semibold text-slate-800 mb-1 flex items-center gap-1.5 font-mono">
           <Activity className="w-3.5 h-3.5 text-violet-400" />
           Case-Specific Accuracy & Overlap Evaluation
         </h4>
@@ -147,7 +147,7 @@ export const ModelReliabilityPanel: React.FC<ModelReliabilityPanelProps> = ({
           <div className="space-y-2 mt-2 font-mono text-xs">
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="p-2 rounded bg-slate-950 border border-cyan-500/30">
-                <span className="text-[10px] text-cyan-400 block">WT Dice (DSC)</span>
+                <span className="text-[10px] text-sky-600 block">WT Dice (DSC)</span>
                 <span className="text-base font-bold text-white">{(metrics.wtDice! * 100).toFixed(1)}%</span>
                 <span className="text-[9px] text-slate-400 block">Sensitivity: {(metrics.wtSensitivity! * 100).toFixed(1)}%</span>
               </div>
@@ -175,7 +175,7 @@ export const ModelReliabilityPanel: React.FC<ModelReliabilityPanelProps> = ({
 
       {/* Known Limitations */}
       <div>
-        <h4 className="text-xs font-semibold text-slate-200 mb-1.5 flex items-center gap-1.5">
+        <h4 className="text-xs font-semibold text-slate-800 mb-1.5 flex items-center gap-1.5">
           <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
           Documented Methodological Limitations
         </h4>

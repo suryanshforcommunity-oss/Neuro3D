@@ -63,28 +63,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onSelectPage }) =>
   ];
 
   return (
-    <aside className="w-64 bg-[#0A0D17] border-r border-[#1E293B] flex flex-col justify-between select-none flex-shrink-0 z-20">
+    <aside className="w-64 bg-white/90 backdrop-blur-md border-r border-slate-200/80 flex flex-col justify-between select-none flex-shrink-0 z-20 shadow-xs">
       {/* Brand header */}
       <div>
-        <div className="p-4 border-b border-[#1E293B]/80 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-cyan-600 via-cyan-500 to-violet-500 p-0.5 shadow-md shadow-cyan-500/20 flex-shrink-0">
-            <div className="w-full h-full bg-[#090C15] rounded-[7px] flex items-center justify-center">
-              <Brain className="w-5 h-5 text-cyan-400" />
+        <div className="p-4 border-b border-slate-200/80 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 via-teal-500 to-indigo-600 p-0.5 shadow-md shadow-sky-500/20 flex-shrink-0">
+            <div className="w-full h-full bg-white rounded-[9px] flex items-center justify-center">
+              <Brain className="w-5 h-5 text-sky-600" />
             </div>
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-sm tracking-tight text-white">NeuroScope</span>
-              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-500/30">
-                3D
+              <span className="font-bold text-sm tracking-tight text-slate-900">NeuroScope</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 font-semibold border border-sky-200">
+                3D v1.0
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 leading-tight">Stage 1 Frontend Workstation</p>
+            <p className="text-[10px] text-slate-500 font-medium">BraTS MRI Workstation</p>
           </div>
         </div>
 
         {/* Tagline callout */}
-        <div className="mx-3 mt-3 px-3 py-2 rounded-md bg-[#101524] border border-[#1E293B] text-[11px] text-slate-400 italic leading-relaxed">
+        <div className="mx-3 mt-3 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 italic leading-relaxed">
           “See a brain tumour in 3D, measure it, and know how far to trust it.”
         </div>
 
@@ -97,21 +97,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onSelectPage }) =>
               <button
                 key={item.id}
                 onClick={() => onSelectPage(item.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all text-left group ${
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all text-left group ${
                   isActive
-                    ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-sm shadow-cyan-500/10'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent'
+                    ? 'bg-sky-50 text-sky-700 font-semibold border border-sky-200/80 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'
                 }`}
               >
                 <Icon
                   className={`w-4 h-4 flex-shrink-0 transition-colors ${
-                    isActive ? 'text-cyan-400' : 'text-slate-400 group-hover:text-slate-300'
+                    isActive ? 'text-sky-600' : 'text-slate-400 group-hover:text-slate-600'
                   }`}
                 />
                 <div className="flex-1 truncate">
                   <span className="block truncate">{item.label}</span>
                 </div>
-                {isActive && <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />}
+                {isActive && <div className="w-1.5 h-1.5 rounded-full bg-sky-600 animate-pulse" />}
               </button>
             );
           })}
@@ -119,17 +119,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onSelectPage }) =>
       </div>
 
       {/* Footer / System status */}
-      <div className="p-3 border-t border-[#1E293B] bg-[#080B12]/80 text-[11px] text-slate-400 space-y-1.5 font-mono">
+      <div className="p-3.5 border-t border-slate-200/80 bg-slate-50/70 text-[11px] text-slate-500 space-y-1.5 font-mono">
         <div className="flex justify-between items-center text-[10px]">
           <span>ENVIRONMENT</span>
-          <span className="text-cyan-400 font-semibold">STAGE 1 CLIENT</span>
+          <span className="text-sky-700 font-semibold">STAGE 2 VERIFIED</span>
         </div>
         <div className="flex justify-between items-center text-[10px]">
           <span>CONVENTION</span>
-          <span className="text-slate-300">RADIOLOGICAL (L/R)</span>
+          <span className="text-slate-700 font-medium">RADIOLOGICAL (L/R)</span>
         </div>
-        <div className="pt-1 text-[9px] text-slate-400 border-t border-slate-800 leading-tight">
-          BraTS Standard Nested Label Definitions (NCR=1, ED=2, ET=4)
+        <div className="pt-1.5 text-[10px] text-slate-400 border-t border-slate-200 leading-tight">
+          BraTS Standard Nested Labels (NCR=1, ED=2, ET=4)
         </div>
       </div>
     </aside>
