@@ -293,7 +293,7 @@ export function useNeuroScopeState() {
     setUploadedSequences(prev =>
       prev.map(slot =>
         slot.sequenceType === type
-          ? { sequenceType: type, file: null, filename: '', fileSize: 0, isValid: false, isLoaded: false }
+          ? { sequenceType: type, file: null, filename: '', fileSize: 0, isValid: false, isLoaded: false, validationError: undefined, header: undefined, sha256: undefined }
           : slot
       )
     );

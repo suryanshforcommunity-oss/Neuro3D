@@ -6,7 +6,6 @@ import {
   AlertCircle,
   Trash2,
   RefreshCw,
-  HardDrive,
   Hash,
 } from 'lucide-react';
 import { UploadedSequence, MriSequenceType } from '../../types';
@@ -26,15 +25,43 @@ export const SequenceSlotCard: React.FC<SequenceSlotCardProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const sequenceLabels: Record<MriSequenceType, { title: string; subtitle: string; tag: string }> = {
-    T1: { title: 'T1 Native', subtitle: 'T1-weighted non-contrast anatomical MRI', tag: 'Required' },
-    T1Gd: { title: 'T1-Gd (Contrast)', subtitle: 'T1 with gadolinium contrast enhancement', tag: 'Required' },
-    T2: { title: 'T2-weighted', subtitle: 'Fluid-sensitive structural sequence', tag: 'Required' },
-    FLAIR: { title: 'T2-FLAIR', subtitle: 'Fluid-attenuated inversion recovery sequence', tag: 'Required' },
-    EXPERT_MASK: { title: 'Expert Ground Truth Mask', subtitle: 'Optional radiologist ground truth (.nii/.nii.gz)', tag: 'Optional' },
+  const sequenceMeta: Record<
+    MriSequenceType,
+    { title: string; subtitle: string; badgeLabel: string; badgeStyle: string }
+  > = {
+    T1: {
+      title: 'T1 Scan (Brain Structure)',
+      subtitle: 'Standard brain structure scan without contrast dye',
+      badgeLabel: 'T1',
+      badgeStyle: 'bg-slate-100 text-slate-800 border-slate-300',
+    },
+    T1Gd: {
+      title: 'T1-Gd Scan (Contrast Dye)',
+      subtitle: 'Scan with contrast dye highlighting the active, growing tumor rim',
+      badgeLabel: 'T1-Gd',
+      badgeStyle: 'bg-amber-50 text-amber-800 border-amber-300',
+    },
+    T2: {
+      title: 'T2 Scan (Tissue & Fluid)',
+      subtitle: 'Fluid-sensitive scan showing differences in brain tissue',
+      badgeLabel: 'T2',
+      badgeStyle: 'bg-emerald-50 text-emerald-800 border-emerald-300',
+    },
+    FLAIR: {
+      title: 'FLAIR Scan (Brain Swelling)',
+      subtitle: 'Suppresses normal spinal fluid to clearly show brain swelling (edema)',
+      badgeLabel: 'FLAIR',
+      badgeStyle: 'bg-sky-50 text-sky-800 border-sky-300',
+    },
+    EXPERT_MASK: {
+      title: "Doctor's Hand-Drawn Tumor Map",
+      subtitle: "Optional expert tumor mask (.nii / .nii.gz) to check AI accuracy",
+      badgeLabel: 'MASK',
+      badgeStyle: 'bg-purple-50 text-purple-800 border-purple-300',
+    },
   };
 
-  const info = sequenceLabels[slot.sequenceType];
+  const info = sequenceMeta[slot.sequenceType];
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -53,12 +80,12 @@ export const SequenceSlotCard: React.FC<SequenceSlotCardProps> = ({
     <div
       onDragOver={e => e.preventDefault()}
       onDrop={handleDrop}
-      className={`p-3.5 rounded-xl border transition select-none ${
+      className={`px-5 py-4 transition-colors select-none flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
         slot.isLoaded
           ? slot.isValid
-            ? 'bg-emerald-50/70 border-emerald-200 text-emerald-950'
-            : 'bg-rose-50/70 border-rose-200 text-rose-950'
-          : 'bg-slate-50 border border-slate-200 hover:border-sky-300 shadow-2xs'
+            ? 'bg-white hover:bg-slate-50/70'
+            : 'bg-rose-50/40 hover:bg-rose-50/60'
+          : 'bg-white hover:bg-slate-50/50'
       }`}
     >
       <input
@@ -69,97 +96,132 @@ export const SequenceSlotCard: React.FC<SequenceSlotCardProps> = ({
         className="hidden"
       />
 
-      <div className="flex items-start justify-between gap-2">
+      {/* Left: Modality Identity & Badges */}
+      <div className="flex items-start sm:items-center gap-3.5 min-w-[240px] flex-shrink-0">
+        <span
+          className={`w-14 text-center px-2 py-1 rounded-md text-xs font-mono font-bold border ${info.badgeStyle}`}
+        >
+          {info.badgeLabel}
+        </span>
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-slate-900 text-xs font-mono">{info.title}</span>
+            <span className="font-bold text-slate-900 text-xs tracking-tight">
+              {info.title}
+            </span>
             <span
-              className={`text-[9px] font-mono px-1.5 py-0.2 rounded font-semibold uppercase ${
+              className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider ${
                 required
-                  ? 'bg-sky-50 text-sky-700 border border-sky-200 font-semibold'
-                  : 'bg-slate-800 text-slate-500 border border-slate-700'
+                  ? 'bg-sky-50 text-sky-800 border border-sky-200'
+                  : 'bg-slate-100 text-slate-600 border border-slate-200'
               }`}
             >
-              {info.tag}
+              {required ? 'Required' : 'Optional'}
             </span>
           </div>
-          <p className="text-[10px] text-slate-500 mt-0.5">{info.subtitle}</p>
+          <p className="text-[11px] text-slate-500 font-medium mt-0.5 leading-tight">
+            {info.subtitle}
+          </p>
         </div>
+      </div>
 
-        {slot.isLoaded && (
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="p-1 rounded text-slate-500 hover:text-slate-800 hover:bg-slate-800 transition"
-              title="Replace file"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => onRemove(slot.sequenceType)}
-              className="p-1 rounded text-slate-500 hover:text-rose-400 hover:bg-slate-800 transition"
-              title="Remove sequence"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
+      {/* Middle: Loaded File Specifications OR Error State OR Inline SaaS Dropzone */}
+      <div className="flex-1 min-w-0">
+        {slot.validationError ? (
+          /* Explicit Invalid File State with Diagnostic Feedback */
+          <div className="bg-rose-50/60 border border-rose-200 rounded-xl p-3 text-xs space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 truncate">
+                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                <span className="font-semibold text-rose-950 truncate" title={slot.filename}>
+                  {slot.filename || 'Unsupported File'}
+                </span>
+                {slot.fileSize > 0 && (
+                  <span className="text-[11px] text-rose-700 font-mono">
+                    ({(slot.fileSize / (1024 * 1024)).toFixed(2)} MB)
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-rose-800 bg-rose-100/90 border border-rose-300 px-2 py-0.5 rounded-md flex-shrink-0">
+                Rejected
+              </span>
+            </div>
+
+            <p className="text-[11px] text-rose-900 font-medium leading-relaxed bg-white/80 p-2 rounded-lg border border-rose-200/60">
+              {slot.validationError}
+            </p>
+
+            <div className="flex items-center justify-between pt-1 text-[11px]">
+              <span className="text-slate-500">Only standard 3D MRI scans (.nii or .nii.gz) supported</span>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="text-sky-700 hover:text-sky-900 font-bold hover:underline flex items-center gap-1"
+              >
+                <RefreshCw className="w-3 h-3" />
+                <span>Select Different File</span>
+              </button>
+            </div>
+          </div>
+        ) : !slot.isLoaded ? (
+          /* Empty Ready Dropzone */
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="group border border-dashed border-slate-300 hover:border-sky-500 hover:bg-sky-50/40 bg-slate-50/60 rounded-xl px-4 py-2.5 cursor-pointer transition flex items-center justify-between text-xs"
+          >
+            <div className="flex items-center gap-2.5 text-slate-600 group-hover:text-sky-900">
+              <UploadCloud className="w-4 h-4 text-slate-400 group-hover:text-sky-600 transition" />
+              <span className="font-medium">Click or drop 3D MRI scan (.nii or .nii.gz)</span>
+            </div>
+            <span className="text-[11px] font-mono text-slate-600">3D Volume (max 1 GB)</span>
+          </div>
+        ) : (
+          /* Verified Loaded File Chip */
+          <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <FileText className="w-4 h-4 text-sky-600 flex-shrink-0" />
+              <div className="truncate">
+                <span className="text-slate-900 font-semibold text-xs truncate block max-w-[280px]" title={slot.filename}>
+                  {slot.filename}
+                </span>
+                {slot.isValid && slot.header && (
+                  <span className="text-[11px] text-slate-500 font-mono flex items-center gap-2 mt-0.5">
+                    <span>{slot.header.dimensions.dimX}×{slot.header.dimensions.dimY}×{slot.header.dimensions.dimZ} voxels (3D pixels)</span>
+                    <span>•</span>
+                    <span>{slot.header.spacing.x.toFixed(2)} mm pixel spacing</span>
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 font-mono flex-shrink-0">
+              <span className="text-slate-600 font-semibold text-xs">
+                {(slot.fileSize / (1024 * 1024)).toFixed(2)} MB
+              </span>
+              <div className="flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 text-[11px] font-sans font-bold">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Verified & Ready</span>
+              </div>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Upload area or File details */}
-      {!slot.isLoaded ? (
-        <div
-          onClick={() => fileInputRef.current?.click()}
-          className="mt-2.5 p-3 rounded-lg border border-dashed border-slate-700/80 hover:border-cyan-500/50 hover:bg-cyan-950/10 transition cursor-pointer flex flex-col items-center justify-center text-center"
-        >
-          <UploadCloud className="w-5 h-5 text-slate-500 mb-1" />
-          <span className="text-xs text-slate-700 font-medium">Click to browse or drag & drop</span>
-          <span className="text-[10px] text-slate-500 font-mono mt-0.5">Supports .nii, .nii.gz (up to 1 GB)</span>
-        </div>
-      ) : (
-        <div className="mt-2.5 space-y-1.5 text-xs font-mono">
-          <div className="flex items-center justify-between p-2 rounded bg-slate-950/80 border border-slate-100">
-            <div className="flex items-center gap-2 overflow-hidden truncate">
-              <FileText className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
-              <span className="text-slate-800 truncate text-[11px] font-medium">{slot.filename}</span>
-            </div>
-            <span className="text-[10px] text-slate-500 flex-shrink-0">
-              {(slot.fileSize / (1024 * 1024)).toFixed(2)} MB
-            </span>
-          </div>
-
-          {slot.isValid && slot.header && (
-            <div className="p-2 rounded bg-slate-900/50 border border-slate-100 text-[10px] text-slate-500 space-y-1">
-              <div className="flex justify-between">
-                <span>Dimensions:</span>
-                <span className="text-slate-800">
-                  {slot.header.dimensions.dimX} × {slot.header.dimensions.dimY} × {slot.header.dimensions.dimZ}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Voxel Spacing:</span>
-                <span className="text-slate-800">
-                  {slot.header.spacing.x.toFixed(2)} × {slot.header.spacing.y.toFixed(2)} × {slot.header.spacing.z.toFixed(2)} mm
-                </span>
-              </div>
-              {slot.sha256 && (
-                <div className="flex items-center justify-between text-[9px] text-slate-500 truncate">
-                  <span className="flex items-center gap-1">
-                    <Hash className="w-2.5 h-2.5 text-sky-600" />
-                    SHA-256:
-                  </span>
-                  <span className="font-mono text-cyan-300 truncate max-w-[140px]">{slot.sha256.substring(0, 16)}...</span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {!slot.isValid && slot.validationError && (
-            <div className="p-2 rounded bg-rose-950/40 border border-rose-500/40 text-rose-300 text-[11px] flex items-start gap-1.5">
-              <AlertCircle className="w-3.5 h-3.5 text-rose-400 flex-shrink-0 mt-0.5" />
-              <span>{slot.validationError}</span>
-            </div>
-          )}
+      {/* Right: Actions (Replace / Remove) */}
+      {(slot.isLoaded || slot.validationError) && (
+        <div className="flex items-center gap-1 sm:pl-2 flex-shrink-0">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition"
+            title="Choose a different MRI scan file"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => onRemove(slot.sequenceType)}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+            title="Remove scan from session"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
     </div>

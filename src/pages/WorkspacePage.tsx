@@ -63,11 +63,11 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
   onResetCamera,
 }) => {
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden p-3.5 gap-3.5 bg-slate-100/60">
+    <div className="flex-1 flex flex-col h-full overflow-y-auto p-4 gap-4 bg-slate-100/60">
       {/* Upper Main Interactive Grid: Large 3D Viewport + 3 Synchronized Slice Panels */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3.5 min-h-[460px]">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[400px]">
         {/* Left Column: 3D Brain Viewer (5 cols) */}
-        <div className="lg:col-span-5 h-full rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs bg-white relative flex flex-col">
+        <div className="lg:col-span-5 h-[420px] lg:h-full rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs bg-white relative flex flex-col">
           <BrainViewer3D
             visibility={visibility}
             opacity={opacity}
@@ -86,7 +86,7 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
         </div>
 
         {/* Right Column: 3 Orthogonal Slices (Axial, Coronal, Sagittal) (7 cols) */}
-        <div className="lg:col-span-7 h-full rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs bg-white flex flex-col">
+        <div className="lg:col-span-7 h-[420px] lg:h-full rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs bg-white flex flex-col">
           <OrthogonalSliceView
             crosshair={crosshair}
             onUpdateCrosshair={onUpdateCrosshair}
@@ -105,7 +105,7 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
       </div>
 
       {/* Lower Section: Volumetric Region Cards */}
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 pb-4">
         <RegionVolumeCards
           labelCounts={labelCounts}
           spacing={spacing}

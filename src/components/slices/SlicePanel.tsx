@@ -320,20 +320,20 @@ export const SlicePanel: React.FC<SlicePanelProps> = ({
       onWheel={handleWheel}
     >
       {/* Panel Header */}
-      <div className="h-8 bg-slate-50 border-b border-slate-200/80 px-3 flex items-center justify-between text-xs z-10">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-sky-500" />
-          <span className="font-semibold text-slate-800 tracking-wide font-mono text-[11px] uppercase">
+      <div className="min-h-[38px] bg-slate-50 border-b border-slate-200/90 px-3 py-1.5 flex items-center justify-between text-xs z-10 gap-2 select-none">
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <span className="w-2 h-2 rounded-full bg-sky-600 flex-shrink-0" />
+          <span className="font-bold text-slate-950 text-xs tracking-tight whitespace-nowrap">
             {title}
           </span>
-          <span className="text-slate-500 font-mono text-[10px]">
-            Slice {currentSliceIndex + 1}/{maxSlices}
+          <span className="text-slate-700 bg-slate-200/90 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold flex-shrink-0">
+            {currentSliceIndex + 1}/{maxSlices}
           </span>
         </div>
 
-        <div className="flex items-center gap-2 text-slate-500 font-mono text-[10px]">
-          <span>{sliceWorldMm.toFixed(1)} mm</span>
-          <div className="flex items-center gap-0.5 ml-1">
+        <div className="flex items-center gap-1.5 text-xs font-mono flex-shrink-0">
+          <span className="text-sky-800 font-bold whitespace-nowrap">{sliceWorldMm.toFixed(1)} mm</span>
+          <div className="flex items-center gap-0.5 bg-white border border-slate-300 rounded-md p-0.5 shadow-2xs">
             <button
               onClick={() => {
                 const next = Math.max(0, currentSliceIndex - 1);
@@ -341,7 +341,7 @@ export const SlicePanel: React.FC<SlicePanelProps> = ({
                 else if (plane === 'coronal') onUpdateCrosshair({ j: next });
                 else if (plane === 'sagittal') onUpdateCrosshair({ i: next });
               }}
-              className="p-0.5 hover:text-sky-600 text-slate-500 transition"
+              className="p-0.5 hover:text-sky-600 hover:bg-slate-100 rounded text-slate-700 transition"
               title="Previous slice"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
@@ -353,7 +353,7 @@ export const SlicePanel: React.FC<SlicePanelProps> = ({
                 else if (plane === 'coronal') onUpdateCrosshair({ j: next });
                 else if (plane === 'sagittal') onUpdateCrosshair({ i: next });
               }}
-              className="p-0.5 hover:text-sky-600 text-slate-500 transition"
+              className="p-0.5 hover:text-sky-600 hover:bg-slate-100 rounded text-slate-700 transition"
               title="Next slice"
             >
               <ChevronRight className="w-3.5 h-3.5" />
@@ -401,7 +401,7 @@ export const SlicePanel: React.FC<SlicePanelProps> = ({
         </div>
 
         {/* Anatomical Orientation Letters (Superior/Inferior, Anterior/Posterior, Left/Right) */}
-        <div className="absolute inset-0 pointer-events-none p-2 flex flex-col justify-between text-[11px] font-mono font-bold text-cyan-400/70 select-none">
+        <div className="absolute inset-0 pointer-events-none p-2 flex flex-col justify-between text-xs font-mono font-bold text-cyan-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] select-none">
           <div className="flex justify-center">{labels.top}</div>
           <div className="flex justify-between items-center px-1">
             <span>{labels.left}</span>

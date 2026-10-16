@@ -141,9 +141,10 @@ def run_model_inference(
     # Resample back to original spatial grid if necessary
     final_label_map = resample_label_map_nearest_neighbor(discrete_labels, original_shape)
 
-    # Save output NIfTI preserving exact input affine matrix
+    # Save output NIfTI preserving exact input affine matrix and setting uint8 datatype for segmentation labels
     output_path.parent.mkdir(parents=True, exist_ok=True)
     out_nimg = nib.Nifti1Image(final_label_map, original_affine, original_header)
+    out_nimg.set_data_dtype(np.uint8)
     nib.save(out_nimg, str(output_path))
 
     return {

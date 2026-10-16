@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import Antigravity from '../components/animations/Antigravity';
 import { ShowcaseBrain3D } from '../components/viewer/ShowcaseBrain3D';
+import TechStackLoop from '../components/animations/TechStackLoop';
 
 interface LandingPageProps {
   onLaunchWorkstation: () => void;
@@ -42,6 +43,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 }) => {
   // Interactive preview state for the hero showcase card
   const [previewPlane, setPreviewPlane] = useState<'3d' | 'axial' | 'coronal' | 'sagittal'>('3d');
+  const [viewMode3D, setViewMode3D] = useState<'video' | 'interactive'>('video');
   const [showWT, setShowWT] = useState<boolean>(true);
   const [showTC, setShowTC] = useState<boolean>(true);
   const [showET, setShowET] = useState<boolean>(true);
@@ -63,24 +65,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   const faqs = [
     {
-      q: 'Is NeuroScope 3D approved for clinical diagnosis?',
-      a: 'No. NeuroScope 3D is strictly an investigational research and teaching workstation. It must never be used as a standalone diagnostic tool or for clinical treatment planning without independent board-certified radiologist review.',
+      q: 'Can this website be used for medical diagnosis?',
+      a: 'No. NeuroScope 3D is an educational and academic research demonstration prototype. It is designed to demonstrate 3D medical visualization and AI segmentation. It must never be used for real clinical diagnosis or medical treatment decisions without qualified doctor review.',
     },
     {
-      q: 'Are patient MRI scans uploaded to third-party cloud servers?',
-      a: 'Never. NeuroScope 3D operates with a strict Zero-Trust Clinical Privacy guarantee. All NIfTI file parsing, header inspections, and coordinate conversions run inside your local browser sandbox and on-premises Python environment. No data ever leaves your device.',
+      q: 'Are my MRI scans sent to external clouds or third parties?',
+      a: 'No. NeuroScope 3D is designed with privacy first. All MRI scan files are opened directly inside your browser. No patient images or scan data are ever uploaded to third-party commercial clouds or external AI services.',
     },
     {
-      q: 'Which MRI modalities and file formats are required?',
-      a: 'The platform strictly follows the official BraTS standard requiring four co-registered 3D volumes in NIfTI (.nii or .nii.gz) format: T1 native, T1 contrast-enhanced (T1-Gd), T2, and T2-FLAIR. An optional expert ground truth mask can also be provided for scoring.',
+      q: 'What types of MRI scans and file formats can I use?',
+      a: "The system uses standard 3D NIfTI files (.nii or .nii.gz). For complete tumor analysis, four standard brain MRI scans are used: T1 (anatomy), T1-Gd (contrast dye), T2 (tissue/fluid), and FLAIR (swelling). You can also load an optional doctor's map to test AI accuracy.",
     },
     {
-      q: 'Does NeuroScope 3D require an NVIDIA GPU?',
-      a: 'While GPU acceleration via CUDA provides real-time sliding-window inference, NeuroScope 3D includes a fully verified CPU execution fallback mode. The software automatically detects available hardware and reports execution mode transparently.',
+      q: 'Do I need an expensive graphics card (GPU) to use this?',
+      a: 'No. The interactive 3D viewer, 2D slice crosshairs, and volume calculations run smoothly in any modern web browser on standard laptops and computers. If running AI inference on a server, both CPU and GPU modes are supported.',
     },
     {
-      q: 'How does the 24-hour study data retention cleanup work?',
-      a: 'To guarantee strict patient privacy compliance, the server backend includes an automated data retention worker that physically purges all temporary study folders and tensors older than 24 hours (86,400 seconds) from disk.',
+      q: 'What does the 24-hour cleanup mean?',
+      a: 'For privacy and data safety, any temporary session files processed on your local backend server are automatically and permanently deleted after 24 hours.',
     },
   ];
 
@@ -111,29 +113,37 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <nav className="sticky top-0 z-40 bg-white/70 backdrop-blur-md border-b border-slate-200/60 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Logo & Brand */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 via-teal-500 to-indigo-600 p-0.5 shadow-md shadow-sky-500/20">
-              <div className="w-full h-full bg-white rounded-[10px] flex items-center justify-center">
-                <Brain className="w-6 h-6 text-sky-600" />
-              </div>
+          <button
+            onClick={() => {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="flex items-center gap-3 text-left group cursor-pointer"
+            title="Return to top"
+          >
+            <div className="w-10 h-10 rounded-xl overflow-hidden shadow-sm border border-slate-200 bg-white flex-shrink-0 group-hover:scale-105 transition-transform p-0.5 flex items-center justify-center">
+              <img
+                src="/medical_ai_logo.jpeg"
+                alt="Medical AI Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-lg tracking-tight text-slate-900">NeuroScope</span>
+                <span className="font-bold text-lg tracking-tight text-slate-900 group-hover:text-sky-600 transition-colors">NeuroScope</span>
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 border border-sky-200 font-mono">
                   3D v1.0
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 font-medium">BraTS MRI Volumetric Workstation</p>
+              <p className="text-[11px] text-slate-500 font-medium group-hover:text-slate-700">3D Brain MRI Analysis & Tumor Explorer</p>
             </div>
-          </div>
+          </button>
 
           {/* Nav links */}
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
             <a href="#features" className="hover:text-sky-600 transition">Features</a>
             <a href="#showcase" className="hover:text-sky-600 transition">Interactive Demo</a>
             <a href="#calculator" className="hover:text-sky-600 transition">Volume Calculator</a>
-            <a href="#workflow" className="hover:text-sky-600 transition">Pipeline</a>
+            <a href="#workflow" className="hover:text-sky-600 transition">How It Works</a>
             <a href="#faq" className="hover:text-sky-600 transition">FAQ</a>
           </div>
 
@@ -144,14 +154,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition"
             >
               <Database className="w-3.5 h-3.5 text-slate-500" />
-              <span>Load Demo #042</span>
+              <span>Load Sample Scan</span>
             </button>
 
             <button
               onClick={onLaunchWorkstation}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 shadow-md shadow-sky-500/20 transition-all transform hover:-translate-y-0.5"
             >
-              <span>Launch Workstation</span>
+              <span>Open 3D Viewer</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -168,23 +178,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {/* Pill Badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-sky-200 shadow-xs text-xs font-semibold text-slate-700">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-sky-700 font-mono">MONAI SegResNet</span>
+              <span className="text-sky-700 font-mono">AI Brain Tumor Detection</span>
               <span className="text-slate-300">•</span>
-              <span>BraTS Protocol Standard</span>
+              <span>4-Sequence MRI Support</span>
             </div>
 
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
-              See a brain tumour in 3D,{' '}
+              See a brain tumor in 3D,{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 via-teal-600 to-indigo-600">
-                measure it in mL
+                measure its size in mL
               </span>
-              , and know how far to trust it.
+              , and understand the AI results.
             </h1>
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal max-w-2xl mx-auto">
-              A clinician-grade research workstation for automated 4-sequence brain MRI segmentation (T1, T1-Gd, T2, FLAIR). Features sub-millimeter anisotropic volumetrics, orthogonal slice tracking, and rigorous NiBabel spatial verification.
+              An easy-to-use, research-grade platform that identifies brain tumors across standard MRI scans (T1, T1-Gd, T2, FLAIR). Explore interactive 3D brain visuals, 2D slice crosshairs, and millimeter-accurate tumor volume measurements.
             </p>
 
             {/* CTAs */}
@@ -193,7 +203,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 onClick={onLaunchWorkstation}
                 className="flex items-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 shadow-lg shadow-sky-500/25 transition-all transform hover:-translate-y-0.5 text-sm sm:text-base"
               >
-                <span>Open 3D Workstation</span>
+                <span>Open 3D Brain Viewer</span>
                 <ArrowRight className="w-5 h-5" />
               </button>
 
@@ -202,7 +212,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 className="flex items-center gap-2 px-5 py-3.5 rounded-xl font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 shadow-xs hover:border-slate-400 transition-all text-sm sm:text-base"
               >
                 <FileText className="w-4 h-4 text-sky-600" />
-                <span>Upload 4-Sequence NIfTI</span>
+                <span>Upload MRI Scans (NIfTI)</span>
               </button>
             </div>
 
@@ -211,33 +221,33 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="p-3 bg-white/70 backdrop-blur-xs rounded-xl border border-slate-200/80 shadow-xs">
                 <div className="flex items-center gap-2 text-sky-700 font-semibold text-xs mb-1">
                   <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                  <span>100% Client Privacy</span>
+                  <span>100% Private & Secure</span>
                 </div>
-                <p className="text-[11px] text-slate-500">Zero cloud scan leaks; runs in sandboxed environment.</p>
+                <p className="text-[11px] text-slate-500">Scans stay on your device; opens directly in your browser.</p>
               </div>
 
               <div className="p-3 bg-white/70 backdrop-blur-xs rounded-xl border border-slate-200/80 shadow-xs">
                 <div className="flex items-center gap-2 text-sky-700 font-semibold text-xs mb-1">
                   <Activity className="w-4 h-4 text-sky-500" />
-                  <span>BraTS Sub-Regions</span>
+                  <span>Color-Coded Layers</span>
                 </div>
-                <p className="text-[11px] text-slate-500">WT (Whole), TC (Core), and ET (Enhancing) compartments.</p>
+                <p className="text-[11px] text-slate-500">Whole Tumor (WT), Tumor Core (TC), and Active Rim (ET).</p>
               </div>
 
               <div className="p-3 bg-white/70 backdrop-blur-xs rounded-xl border border-slate-200/80 shadow-xs">
                 <div className="flex items-center gap-2 text-sky-700 font-semibold text-xs mb-1">
                   <Sliders className="w-4 h-4 text-indigo-500" />
-                  <span>Sub-mm Spacing</span>
+                  <span>Exact Size in mL</span>
                 </div>
-                <p className="text-[11px] text-slate-500">Strict physical formula compensating for anisotropic grids.</p>
+                <p className="text-[11px] text-slate-500">Converts 3D pixels (voxels) into accurate milliliters.</p>
               </div>
 
               <div className="p-3 bg-white/70 backdrop-blur-xs rounded-xl border border-slate-200/80 shadow-xs">
                 <div className="flex items-center gap-2 text-sky-700 font-semibold text-xs mb-1">
                   <Cpu className="w-4 h-4 text-amber-500" />
-                  <span>Verified Pipeline</span>
+                  <span>Medical AI Network</span>
                 </div>
-                <p className="text-[11px] text-slate-500">MONAI SegResNet sliding-window inference with seed locking.</p>
+                <p className="text-[11px] text-slate-500">Powered by MONAI SegResNet trained on brain MRI scans.</p>
               </div>
             </div>
           </div>
@@ -254,7 +264,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     <span className="w-3 h-3 rounded-full bg-emerald-400/80" />
                   </div>
                   <span className="text-xs font-mono font-semibold text-slate-600 ml-2">
-                    NeuroScope 3D Workstation — Case BraTS2023_00042
+                    NeuroScope 3D Viewer — Sample Brain MRI (BraTS2023_00042)
                   </span>
                 </div>
 
@@ -270,7 +280,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
-                      {plane === '3d' ? '3D Brain' : plane}
+                      {plane === '3d'
+                        ? '3D Brain'
+                        : plane === 'axial'
+                        ? 'Top View'
+                        : plane === 'coronal'
+                        ? 'Front View'
+                        : 'Side View'}
                     </button>
                   ))}
                 </div>
@@ -280,44 +296,71 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200">
                 {/* Visual Viewport Simulation: 3D Rotating Real Human Brain or 2D Orthogonal Slice */}
                 <div className="md:col-span-2 p-4 bg-slate-950 relative min-h-[380px] flex items-center justify-center overflow-hidden">
-                  {/* Subtle Grid Lines Background */}
-                  <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-50" />
-
                   {previewPlane === '3d' ? (
-                    /* Real 3D Rotating Anatomical Human Brain with Small Identifiable Tumour */
-                    <div className="relative w-full h-[360px] flex items-center justify-center">
-                      <ShowcaseBrain3D
-                        showWT={showWT}
-                        showTC={showTC}
-                        showET={showET}
-                        className="w-full h-full"
-                      />
+                    /* 3D Rotating Anatomical Human Brain - Video Loop / Interactive */
+                    <div className="relative w-full h-[360px] flex items-center justify-center overflow-hidden rounded-xl bg-slate-950">
+                      {viewMode3D === 'video' ? (
+                        <video
+                          src="/brain_rotation_loop.mp4"
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="w-full h-full object-contain max-h-[360px] select-none"
+                        />
+                      ) : (
+                        <ShowcaseBrain3D
+                          showWT={showWT}
+                          showTC={showTC}
+                          showET={showET}
+                          className="w-full h-full"
+                        />
+                      )}
 
-                      {/* 3D Status Overlay Badge */}
-                      <div className="absolute top-3 left-3 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-700/80 text-[11px] font-mono text-slate-300 pointer-events-none">
-                        <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                        <span className="font-semibold text-white">3D Cortex Reconstruction</span>
-                        <span className="text-slate-500">•</span>
-                        <span className="text-cyan-300">Auto-Rotating (Drag to Orbit)</span>
+                      {/* 3D Mode Selector & Status Badge */}
+                      <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-slate-900/95 backdrop-blur-md p-1 rounded-xl border border-slate-700/80 text-xs font-sans text-slate-200 shadow-lg z-10">
+                        <button
+                          onClick={() => setViewMode3D('video')}
+                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                            viewMode3D === 'video'
+                              ? 'bg-cyan-500/25 text-cyan-300 border border-cyan-400/50 shadow-xs'
+                              : 'text-slate-400 hover:text-white'
+                          }`}
+                          title="View 3D rotating brain animation loop"
+                        >
+                          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                          <span>3D Video Loop</span>
+                        </button>
+                        <button
+                          onClick={() => setViewMode3D('interactive')}
+                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                            viewMode3D === 'interactive'
+                              ? 'bg-indigo-500/25 text-indigo-300 border border-indigo-400/50 shadow-xs'
+                              : 'text-slate-400 hover:text-white'
+                          }`}
+                          title="Switch to interactive Three.js 3D orbit controls"
+                        >
+                          <span>Interactive 3D</span>
+                        </button>
                       </div>
 
                       {/* Small Identifiable Tumour Callout Card */}
-                      <div className="absolute bottom-3 left-3 bg-slate-900/90 backdrop-blur-md px-3 py-2 rounded-lg border border-cyan-500/40 text-[11px] font-mono shadow-lg pointer-events-none space-y-0.5">
-                        <div className="flex items-center gap-2 text-cyan-300 font-semibold">
-                          <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-                          <span>Identified Nodule: Right Subcortical Parietal</span>
+                      <div className="absolute bottom-3 left-3 bg-slate-900/95 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-cyan-500/50 shadow-xl pointer-events-none space-y-1 z-10">
+                        <div className="flex items-center gap-2 text-cyan-300 font-bold text-xs">
+                          <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
+                          <span>Identified Tumor: Upper Right Brain</span>
                         </div>
-                        <div className="text-[10px] text-slate-400">
-                          Coordinates: X: +14.0 mm, Y: +6.0 mm, Z: +8.0 mm
+                        <div className="text-[11px] text-slate-300 font-mono">
+                          Position: X: +14.0 mm, Y: +6.0 mm, Z: +8.0 mm
                         </div>
                       </div>
 
                       {/* Anatomical Axis Guides */}
-                      <span className="absolute top-3 right-3 text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-slate-800/80 text-slate-400 border border-slate-700">
-                        SUPERIOR (S)
+                      <span className="absolute top-3 right-3 text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-900/90 text-slate-200 border border-slate-700 tracking-wide z-10 pointer-events-none">
+                        TOP (S)
                       </span>
-                      <span className="absolute bottom-3 right-3 text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-slate-800/80 text-slate-400 border border-slate-700">
-                        INFERIOR (I)
+                      <span className="absolute bottom-3 right-3 text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-900/90 text-slate-200 border border-slate-700 tracking-wide z-10 pointer-events-none">
+                        BOTTOM (I)
                       </span>
                     </div>
                   ) : (
@@ -354,16 +397,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   {/* Orientation Badges for 2D Slice Mode */}
                   {previewPlane !== '3d' && (
                     <>
-                      <span className="absolute top-3 left-1/2 -translate-x-1/2 text-xs font-mono font-bold text-slate-400">
-                        {previewPlane === 'axial' ? 'ANTERIOR (A)' : 'SUPERIOR (S)'}
+                      <span className="absolute top-3 left-1/2 -translate-x-1/2 text-xs font-semibold text-slate-400">
+                        {previewPlane === 'axial' ? 'FRONT (A)' : 'TOP (S)'}
                       </span>
-                      <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs font-mono font-bold text-slate-400">
-                        {previewPlane === 'axial' ? 'POSTERIOR (P)' : 'INFERIOR (I)'}
+                      <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs font-semibold text-slate-400">
+                        {previewPlane === 'axial' ? 'BACK (P)' : 'BOTTOM (I)'}
                       </span>
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-slate-400">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">
                         RIGHT (R)
                       </span>
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-slate-400">
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">
                         LEFT (L)
                       </span>
                     </>
@@ -373,8 +416,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 {/* Right Measurement Panel in Showcase */}
                 <div className="p-6 bg-slate-50 flex flex-col justify-between space-y-4">
                   <div>
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 font-mono">
-                      Compartment Volumetrics
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+                      Tumor Size by Layer
                     </h3>
 
                     {/* Volume Cards */}
@@ -382,63 +425,63 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       {/* WT */}
                       <div
                         onClick={() => setShowWT(!showWT)}
-                        className={`p-3 rounded-xl border transition cursor-pointer ${
+                        className={`p-3.5 rounded-xl border transition cursor-pointer ${
                           showWT
-                            ? 'bg-cyan-50/80 border-cyan-200 text-cyan-950'
+                            ? 'bg-cyan-50/90 border-cyan-300 text-cyan-950 shadow-2xs'
                             : 'bg-white border-slate-200 text-slate-400 opacity-60'
                         }`}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" />
-                            <span className="text-xs font-semibold">Whole Tumour (WT)</span>
+                            <span className="text-xs font-bold">Whole Tumor (WT)</span>
                           </div>
-                          <span className="text-xs font-mono font-bold text-cyan-700">29.75 mL</span>
+                          <span className="text-xs font-bold text-cyan-800 font-mono">29.75 mL</span>
                         </div>
-                        <span className="text-[10px] text-slate-500 block mt-1 font-mono">
-                          NCR (1) + ED (2) + ET (4)
+                        <span className="text-[11px] text-slate-600 block mt-1 font-medium">
+                          Entire area: Dead core + swelling + active rim
                         </span>
                       </div>
 
                       {/* TC */}
                       <div
                         onClick={() => setShowTC(!showTC)}
-                        className={`p-3 rounded-xl border transition cursor-pointer ${
+                        className={`p-3.5 rounded-xl border transition cursor-pointer ${
                           showTC
-                            ? 'bg-violet-50/80 border-violet-200 text-violet-950'
+                            ? 'bg-violet-50/90 border-violet-300 text-violet-950 shadow-2xs'
                             : 'bg-white border-slate-200 text-slate-400 opacity-60'
                         }`}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="w-2.5 h-2.5 rounded-full bg-violet-500" />
-                            <span className="text-xs font-semibold">Tumour Core (TC)</span>
+                            <span className="text-xs font-bold">Tumor Core (TC)</span>
                           </div>
-                          <span className="text-xs font-mono font-bold text-violet-700">29.41 mL</span>
+                          <span className="text-xs font-bold text-violet-800 font-mono">29.41 mL</span>
                         </div>
-                        <span className="text-[10px] text-slate-500 block mt-1 font-mono">
-                          NCR (1) + ET (4)
+                        <span className="text-[11px] text-slate-600 block mt-1 font-medium">
+                          Tumor body: Dead cells + active rim
                         </span>
                       </div>
 
                       {/* ET */}
                       <div
                         onClick={() => setShowET(!showET)}
-                        className={`p-3 rounded-xl border transition cursor-pointer ${
+                        className={`p-3.5 rounded-xl border transition cursor-pointer ${
                           showET
-                            ? 'bg-amber-50/80 border-amber-200 text-amber-950'
+                            ? 'bg-amber-50/90 border-amber-300 text-amber-950 shadow-2xs'
                             : 'bg-white border-slate-200 text-slate-400 opacity-60'
                         }`}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                            <span className="text-xs font-semibold">Enhancing Tumour (ET)</span>
+                            <span className="text-xs font-bold">Active Tumor Rim (ET)</span>
                           </div>
-                          <span className="text-xs font-mono font-bold text-amber-700">3.06 mL</span>
+                          <span className="text-xs font-bold text-amber-800 font-mono">3.06 mL</span>
                         </div>
-                        <span className="text-[10px] text-slate-500 block mt-1 font-mono">
-                          ET Active Rim (4)
+                        <span className="text-[11px] text-slate-600 block mt-1 font-medium">
+                          Growing outer rim that absorbs contrast dye
                         </span>
                       </div>
                     </div>
@@ -449,12 +492,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     onClick={onLaunchWorkstation}
                     className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition flex items-center justify-center gap-2"
                   >
-                    <span>Inspect Full 3D Volume</span>
+                    <span>Open Full 3D Viewer</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Technology Stack Logo Loop */}
+          <div className="mt-16 max-w-6xl mx-auto">
+            <TechStackLoop />
           </div>
         </div>
       </section>
@@ -464,13 +512,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
             <span className="text-xs font-mono uppercase tracking-widest text-sky-600 font-semibold">
-              Workstation Architecture
+              Platform Features
             </span>
             <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-              Engineered for Medical Imaging Rigor
+              Built for Clear, Trustworthy MRI Exploration
             </h2>
             <p className="text-slate-600 text-sm leading-relaxed">
-              Every formula, coordinate transformation, and label conversion follows verified international neuro-oncology standards.
+              Combining 3D brain graphics, synchronized 2D slice crosshairs, and transparent AI accuracy checks.
             </p>
           </div>
 
@@ -480,9 +528,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="w-10 h-10 rounded-xl bg-sky-100 border border-sky-200 flex items-center justify-center text-sky-600 mb-4">
                 <Layers className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 mb-2">Tri-Planar Synchronized Views</h3>
+              <h3 className="text-base font-bold text-slate-900 mb-2">Synchronized 3-Way Slice Views</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Simultaneous Axial, Coronal, and Sagittal orthogonal slice panels dynamically synchronized to a single canonical (i, j, k) voxel coordinate and physical (X, Y, Z) mm position via affine transforms.
+                Inspect Top (Axial), Front (Coronal), and Side (Sagittal) MRI slices simultaneously. Clicking anywhere instantly aligns the crosshair across all slice views and the 3D model.
               </p>
             </div>
 
@@ -491,9 +539,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="w-10 h-10 rounded-xl bg-teal-100 border border-teal-200 flex items-center justify-center text-teal-600 mb-4">
                 <BarChart3 className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 mb-2">Physical Volume Quantification</h3>
+              <h3 className="text-base font-bold text-slate-900 mb-2">Physical Milliliter (mL) Measurements</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Strict formula: Count × (dx × dy × dz) / 1000 reading exact spacing from NIfTI headers. Verified on official BraTS test cubes without assuming isotropic 1.0 mm spacing.
+                Strict formula: Total 3D Pixels × (Width × Height × Depth in mm) ÷ 1,000. Reads exact pixel spacing directly from the MRI scan headers for real-world accuracy.
               </p>
             </div>
 
@@ -502,9 +550,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="w-10 h-10 rounded-xl bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-600 mb-4">
                 <Brain className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 mb-2">3D Surface & Cutaway Mesh</h3>
+              <h3 className="text-base font-bold text-slate-900 mb-2">3D Brain Model & Cutaway Tool</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Hardware-accelerated Three.js cortical mesh with concentric WT, TC, and ET tumour boundaries. Features stereotactic cutaway clipping planes to visualize internal tumour core anatomy.
+                Smooth 3D cortical mesh with Whole Tumor, Tumor Core, and Active Rim boundaries. Includes an anatomical cutaway slider so you can slice through the brain surface and see inside.
               </p>
             </div>
 
@@ -513,9 +561,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="w-10 h-10 rounded-xl bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-600 mb-4">
                 <ShieldCheck className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 mb-2">Server-Side NiBabel Validation</h3>
+              <h3 className="text-base font-bold text-slate-900 mb-2">Automatic Scan Consistency Checks</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Automated multi-sequence audit catching 1GB size caps, non-finite NaNs/Infs, zero-variance constant signals, 2D degenerate slices, and cross-modality affine discrepancies &gt; 0.5 mm.
+                Automated validation checks every scan upon upload to ensure matching dimensions, pixel spacing, and orientation before running any AI analysis.
               </p>
             </div>
 
@@ -524,9 +572,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-600 mb-4">
                 <Cpu className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 mb-2">MONAI SegResNet Pipeline</h3>
+              <h3 className="text-base font-bold text-slate-900 mb-2">Medical-Grade AI Pipeline</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Official MONAI 3D SegResNet pipeline with 4-channel input order `[T1Gd, T1, T2, FLAIR]`, non-zero foreground z-score normalization, and nearest-neighbour integer label mapping.
+                Powered by MONAI SegResNet deep learning neural networks trained specifically on multi-sequence brain MRI scans to separate active tumor from surrounding swelling.
               </p>
             </div>
 
@@ -535,9 +583,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="w-10 h-10 rounded-xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-600 mb-4">
                 <Lock className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 mb-2">24h Auto-Purge Privacy</h3>
+              <h3 className="text-base font-bold text-slate-900 mb-2">100% Privacy & Auto-Cleanup</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Zero patient telemetry. Uploaded studies and intermediate tensors are automatically purged after 24 hours (86,400 seconds) by the backend data-retention cleaner.
+                Zero patient data leaks. Uploaded studies and intermediate analysis files are automatically purged after 24 hours by the automated background cleaner.
               </p>
             </div>
           </div>
@@ -550,13 +598,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-sky-100 shadow-xl p-8">
             <div className="text-center max-w-xl mx-auto mb-8 space-y-2">
               <span className="text-xs font-mono font-semibold text-sky-600 uppercase tracking-widest">
-                Interactive Medical Math
+                Interactive Calculator
               </span>
               <h2 className="text-2xl font-bold text-slate-900">
-                Physical Tumour Volume Calculator
+                How Tumor Size in Milliliters (mL) Is Calculated
               </h2>
               <p className="text-xs text-slate-600">
-                Test the sub-millimeter volume calculation formula: Volume (mL) = Voxels × (dx × dy × dz) / 1000.
+                Adjust the sliders below to see how physical dimensions and scan thickness convert into milliliters (mL).
               </p>
             </div>
 
@@ -565,7 +613,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between text-xs font-medium text-slate-700 mb-1">
-                    <span>Axial Dimension (Dx)</span>
+                    <span>Width / Left-to-Right (Dx)</span>
                     <span className="font-mono font-bold text-sky-600">{tumourDx} mm</span>
                   </div>
                   <input
@@ -580,7 +628,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
                 <div>
                   <div className="flex justify-between text-xs font-medium text-slate-700 mb-1">
-                    <span>Coronal Dimension (Dy)</span>
+                    <span>Length / Front-to-Back (Dy)</span>
                     <span className="font-mono font-bold text-sky-600">{tumourDy} mm</span>
                   </div>
                   <input
@@ -595,7 +643,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
                 <div>
                   <div className="flex justify-between text-xs font-medium text-slate-700 mb-1">
-                    <span>Sagittal Dimension (Dz)</span>
+                    <span>Height / Top-to-Bottom (Dz)</span>
                     <span className="font-mono font-bold text-sky-600">{tumourDz} mm</span>
                   </div>
                   <input
@@ -610,7 +658,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
                 <div>
                   <div className="flex justify-between text-xs font-medium text-slate-700 mb-1">
-                    <span>Voxel Z-Spacing (Slice Thickness)</span>
+                    <span>Slice Thickness (Scan Spacing)</span>
                     <span className="font-mono font-bold text-indigo-600">{sliceSpacing.toFixed(1)} mm</span>
                   </div>
                   <input
@@ -628,17 +676,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               {/* Live Output Card */}
               <div className="p-6 rounded-2xl bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-200 text-center space-y-4">
                 <span className="text-xs font-mono uppercase font-semibold text-sky-800">
-                  Calculated Physical Volume
+                  Calculated Tumor Volume
                 </span>
                 <div className="text-5xl font-black text-slate-900 font-mono tracking-tight">
                   {calculatedVolumeMl} <span className="text-2xl font-bold text-sky-600">mL</span>
                 </div>
                 <div className="text-xs text-slate-600 font-mono">
-                  Equivalent to {(Number(calculatedVolumeMl) * 1000).toLocaleString()} mm³
+                  Equivalent to {(Number(calculatedVolumeMl) * 1000).toLocaleString()} mm³ (cubic millimeters)
                 </div>
 
                 <div className="pt-2 border-t border-sky-200/60 text-[11px] text-slate-500 leading-tight">
-                  Formula: V = (4/3)π · rx · ry · rz · Δz / 1000. Spacing read directly from NIfTI pixdim.
+                  Formula: 3D Ellipsoid volume in cubic millimeters converted to milliliters (1 mL = 1,000 mm³).
                 </div>
               </div>
             </div>
@@ -651,10 +699,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
             <span className="text-xs font-mono uppercase tracking-widest text-sky-600 font-semibold">
-              End-to-End Pipeline
+              How It Works
             </span>
             <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-              From Raw Scans to Clinical Provenance
+              4 Simple Steps From Scan to Tumor Report
             </h2>
           </div>
 
@@ -664,9 +712,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="w-8 h-8 rounded-lg bg-sky-600 text-white font-bold text-xs flex items-center justify-center mb-3">
                 1
               </div>
-              <h4 className="font-bold text-sm text-slate-900 mb-1">Upload 4 Sequences</h4>
+              <h4 className="font-bold text-sm text-slate-900 mb-1">Upload 4 MRI Scans</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Drag and drop T1, T1-Gd, T2, and FLAIR NIfTI files into the browser modal with instant header validation.
+                Drag and drop the 4 standard brain MRI scans (T1, T1-Gd, T2, and FLAIR) in .nii or .nii.gz format into the upload window.
               </p>
             </div>
 
@@ -675,9 +723,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="w-8 h-8 rounded-lg bg-teal-600 text-white font-bold text-xs flex items-center justify-center mb-3">
                 2
               </div>
-              <h4 className="font-bold text-sm text-slate-900 mb-1">Spatial Pre-Validation</h4>
+              <h4 className="font-bold text-sm text-slate-900 mb-1">Automatic Scan Check</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                NiBabel verifies matching grid dimensions, voxel zooms, affine alignment, and finite non-zero values.
+                The system automatically checks that all scans match in dimension, pixel spacing, and orientation.
               </p>
             </div>
 
@@ -686,9 +734,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white font-bold text-xs flex items-center justify-center mb-3">
                 3
               </div>
-              <h4 className="font-bold text-sm text-slate-900 mb-1">SegResNet Inference</h4>
+              <h4 className="font-bold text-sm text-slate-900 mb-1">AI Tumor Layer Mapping</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Sliding-window inferer computes probability channels; converts to discrete BraTS labels (1: NCR, 2: ED, 4: ET).
+                The AI identifies the 3 key tumor layers: dead core (pink), swelling (green), and actively growing rim (amber).
               </p>
             </div>
 
@@ -697,9 +745,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="w-8 h-8 rounded-lg bg-purple-600 text-white font-bold text-xs flex items-center justify-center mb-3">
                 4
               </div>
-              <h4 className="font-bold text-sm text-slate-900 mb-1">Export & Provenance</h4>
+              <h4 className="font-bold text-sm text-slate-900 mb-1">Explore in 3D & Export</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Export native affine-preserving `.nii.gz` predictions and generate printable reports with SHA-256 lineage.
+                Rotate the 3D brain, explore 2D slices, measure milliliters, and print or export a full case summary report.
               </p>
             </div>
           </div>
@@ -750,23 +798,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <section className="py-16 bg-gradient-to-r from-sky-600/95 via-teal-600/95 to-indigo-700/95 text-white relative z-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-            Accelerate Your 3D Neuro-Imaging Research Today
+            Explore 3D Brain MRI Analysis Today
           </h2>
           <p className="text-sky-100 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
-            Experience the full workstation with pre-loaded demo cases, synchronized orthogonal slice views, and interactive 3D volumetric analysis.
+            Try our interactive demo case, explore slice-by-slice 2D views, and test physical tumor volume calculations.
           </p>
           <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
             <button
               onClick={onLaunchWorkstation}
               className="px-6 py-3.5 rounded-xl font-bold text-sky-900 bg-white hover:bg-sky-50 shadow-lg shadow-sky-950/20 transition-all transform hover:-translate-y-0.5 text-sm"
             >
-              Open NeuroScope 3D Workstation
+              Open 3D Brain Viewer
             </button>
             <button
               onClick={onLoadDemoCase}
               className="px-5 py-3.5 rounded-xl font-semibold text-white bg-sky-800/60 hover:bg-sky-800/80 border border-white/20 transition-all text-sm"
             >
-              Load Demo Patient #042
+              Load Sample Brain Scan
             </button>
           </div>
         </div>
@@ -776,30 +824,39 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <footer className="bg-slate-900/95 backdrop-blur-sm text-slate-400 text-xs py-12 border-t border-slate-800 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Brain className="w-5 h-5 text-sky-400" />
-              <span className="font-bold text-white text-sm">NeuroScope 3D</span>
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="flex items-center gap-3 text-left group transition cursor-pointer"
+            >
+              <div className="w-7 h-7 rounded-lg overflow-hidden border border-slate-700 bg-white p-0.5 flex items-center justify-center group-hover:border-sky-400 transition-colors">
+                <img
+                  src="/medical_ai_logo.jpeg"
+                  alt="Medical AI Logo"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <span className="font-bold text-white text-sm group-hover:text-sky-300 transition-colors">NeuroScope 3D</span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-sky-300 border border-slate-700">
-                Research Edition v1.0.0-rc2
+                Academic Edition v1.0.0
               </span>
-            </div>
+            </button>
 
             <div className="flex items-center gap-6 text-slate-400 text-xs font-medium">
-              <button onClick={onLaunchWorkstation} className="hover:text-white transition">Workstation</button>
+              <button onClick={onLaunchWorkstation} className="hover:text-white transition">3D Viewer</button>
               <button onClick={onOpenUpload} className="hover:text-white transition">Upload Scans</button>
-              <button onClick={onLoadDemoCase} className="hover:text-white transition">Demo Case</button>
+              <button onClick={onLoadDemoCase} className="hover:text-white transition">Sample Scan</button>
             </div>
           </div>
 
           <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400 leading-relaxed">
-            <strong className="text-amber-400 font-semibold block mb-0.5">Mandatory Clinical Research Disclaimer:</strong>
-            NeuroScope 3D is an investigational research and teaching prototype. Not for clinical diagnosis or treatment decisions.
-            Model outputs are experimental and require independent expert review. Any simulated volumes or overlays are strictly illustrative.
+            <strong className="text-amber-400 font-semibold block mb-0.5">Academic Research & Educational Prototype:</strong>
+            NeuroScope 3D is an educational demonstration project. It is NOT for clinical diagnosis or medical treatment decisions.
+            All AI outputs are experimental demonstrations and must be independently reviewed by qualified medical professionals.
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-slate-500 text-[11px] font-mono">
             <span>© 2026 NeuroScope 3D Project. Apache-2.0 License.</span>
-            <span>MONAI BraTS 2023 SegResNet Specification</span>
+            <span>Educational AI Brain Tumor Segmentation Prototype</span>
           </div>
         </div>
       </footer>

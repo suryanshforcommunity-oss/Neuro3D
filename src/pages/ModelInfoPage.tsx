@@ -16,9 +16,9 @@ export const ModelInfoPage: React.FC<ModelInfoPageProps> = ({
   return (
     <div className="flex-1 p-6 max-w-4xl mx-auto space-y-6 overflow-y-auto select-none">
       <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-lg font-bold text-slate-900">Model Architecture & Reliability Registry</h2>
+        <h2 className="text-lg font-bold text-slate-900">AI Model Information & Reliability</h2>
         <p className="text-xs text-slate-500 font-mono mt-0.5">
-          MONAI SegResNet deep learning inference engine specifications, uncertainty boundaries, and limitations
+          How our AI identifies brain tumors, how its accuracy is measured, and important medical guidelines
         </p>
       </div>
 

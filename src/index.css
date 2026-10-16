@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,15 +6,24 @@
 
 :root {
   color-scheme: light;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: -0.015em;
 }
 
 body {
   margin: 0;
   padding: 0;
   background-color: #F8FAFC;
-  color: #1E293B;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #0F172A;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, .font-heading {
+  font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -0.025em;
 }
 
 /* Custom workstation scrollbar */
@@ -58,24 +67,82 @@ input[type="range"] {
 
 /* Print layout for clinical / research reports */
 @media print {
-  body {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 14mm;
+  }
+
+  /* Reset all root constraints to avoid viewport clipping */
+  html,
+  body,
+  #root,
+  .app-root {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
     background: #ffffff !important;
-    color: #000000 !important;
+    color: #0f172a !important;
+    font-size: 10pt !important;
   }
-  .no-print {
+
+  /* Completely hide all app layout chrome */
+  header,
+  aside,
+  nav,
+  .no-print,
+  button,
+  .disclaimer-banner {
     display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
   }
+
+  /* Force all wrapper containers to unroll naturally without clipping */
+  div,
+  main,
+  section {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
   .print-only {
     display: block !important;
   }
+
+  /* Clean full-bleed report container */
   .print-page {
-    page-break-after: always;
-    padding: 2cm;
-    color: #111827 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
     background: #ffffff !important;
+    color: #0f172a !important;
   }
+
+  /* Ensure card backgrounds print legibly */
   .print-page * {
-    color: #111827 !important;
-    border-color: #E5E7EB !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Prevent awkward page break splits */
+  .avoid-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .force-page-break {
+    page-break-before: always !important;
+    break-before: page !important;
   }
 }

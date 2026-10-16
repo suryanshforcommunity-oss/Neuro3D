@@ -30,7 +30,7 @@ export const ModelReliabilityPanel: React.FC<ModelReliabilityPanelProps> = ({
       <div className="flex items-center justify-between pb-3 border-b border-slate-100">
         <div className="flex items-center gap-2">
           <ShieldAlert className="w-4 h-4 text-sky-600" />
-          <h3 className="font-semibold text-slate-800 text-sm font-semibold">Model Reliability & Uncertainty</h3>
+          <h3 className="font-semibold text-slate-800 text-sm font-semibold">AI Accuracy, Safety & How It Works</h3>
         </div>
         <div className="flex items-center gap-2">
           <span
@@ -39,7 +39,7 @@ export const ModelReliabilityPanel: React.FC<ModelReliabilityPanelProps> = ({
             }`}
           />
           <span className="text-[11px] font-mono text-slate-400">
-            {reliabilityInfo.backendConnected ? 'Inference Engine Online' : 'Backend Disconnected'}
+            {reliabilityInfo.backendConnected ? 'AI Server Online' : 'Offline / Preview Mode'}
           </span>
         </div>
       </div>
@@ -49,45 +49,45 @@ export const ModelReliabilityPanel: React.FC<ModelReliabilityPanelProps> = ({
         <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-900 space-y-1.5">
           <div className="flex items-center gap-2 text-amber-400 font-semibold text-xs font-mono">
             <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-            <span>AI INFERENCE ENGINE STATUS</span>
+            <span>AI SERVER STATUS</span>
           </div>
           <p className="font-medium text-slate-800">
-            “Model inference is not connected. No AI prediction is available.”
+            “The AI server is currently offline. Operating in preview mode.”
           </p>
           <p className="text-[11px] text-slate-400 leading-relaxed">
-            The frontend is operating in local preview mode. Any synthetic segmentation displayed is illustrative demo data and must not be interpreted as an automated neural network prediction.
+            You are viewing the app in offline preview mode. Any tumor outlines displayed are sample illustrations for practice and learning.
           </p>
         </div>
       ) : !reliabilityInfo.inferenceAvailable ? (
         <div className="p-3.5 rounded-xl bg-amber-950/40 border border-amber-500/40 text-xs text-amber-300 space-y-1.5">
           <div className="flex items-center gap-2 text-amber-400 font-semibold text-xs font-mono">
             <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-            <span>PRETRAINED WEIGHTS UNAVAILABLE (INFERENCE BLOCKED)</span>
+            <span>AI MODEL WEIGHTS NOT LOADED</span>
           </div>
           <p className="font-medium text-amber-200">
             “{reliabilityInfo.statusMessage}”
           </p>
           <p className="text-[11px] text-amber-400/80 leading-relaxed">
-            The backend server is reachable, but MONAI SegResNet weights are not installed. Real AI inference is currently unavailable. No simulated or fabricated predictions will be generated.
+            The server is reachable, but the trained AI neural network model file is not installed. To run real tumor predictions, install the model weights.
           </p>
         </div>
       ) : (
         <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300 flex items-center gap-2">
           <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-          <span>Backend inference engine connected and authenticated. Ready for 4-sequence NIfTI processing.</span>
+          <span>AI server connected and ready. All 4 MRI scans (T1, T1-Gd, T2, FLAIR) can be analyzed.</span>
         </div>
       )}
 
       {/* Model Metadata Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs font-mono">
         <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 rounded-xl">
-          <span className="text-[10px] text-slate-400 block mb-0.5">Model Name & Architecture</span>
+          <span className="text-[10px] text-slate-400 block mb-0.5">AI Model & Architecture</span>
           <span className="font-semibold text-slate-800">{reliabilityInfo.modelName}</span>
           <span className="text-[10px] text-slate-400 block mt-0.5">{reliabilityInfo.architecture}</span>
         </div>
 
         <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 rounded-xl">
-          <span className="text-[10px] text-slate-400 block mb-0.5">Version & License</span>
+          <span className="text-[10px] text-slate-400 block mb-0.5">Model Version & License</span>
           <span className="font-semibold text-slate-800">{reliabilityInfo.modelVersion}</span>
           <span className="text-[10px] text-slate-400 block mt-0.5">{reliabilityInfo.modelLicense}</span>
         </div>
@@ -95,17 +95,19 @@ export const ModelReliabilityPanel: React.FC<ModelReliabilityPanelProps> = ({
 
       {/* Preprocessing Pipeline */}
       <div>
-        <h4 className="text-xs font-semibold text-slate-800 mb-1.5 flex items-center gap-1.5 font-mono">
-          <Cpu className="w-3.5 h-3.5 text-sky-600" />
-          Standard Preprocessing Pipeline (MONAI Workflow)
+        <h4 className="text-xs font-bold text-slate-950 mb-2 flex items-center gap-1.5 font-sans">
+          <Cpu className="w-4 h-4 text-sky-600" />
+          How Scans Are Prepared Before AI Analysis (Preprocessing Steps)
         </h4>
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           {reliabilityInfo.preprocessingPipeline.map((step, idx) => (
             <div
               key={idx}
-              className="flex items-center gap-2 text-[11px] text-slate-300 bg-slate-900/40 px-2.5 py-1 rounded border border-slate-800/60 font-mono"
+              className="flex items-center gap-2.5 text-xs text-slate-800 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-2xs font-medium"
             >
-              <span className="text-sky-600 font-semibold">{idx + 1}.</span>
+              <span className="w-5 h-5 rounded-full bg-sky-100 text-sky-800 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                {idx + 1}
+              </span>
               <span>{step}</span>
             </div>
           ))}
@@ -113,76 +115,76 @@ export const ModelReliabilityPanel: React.FC<ModelReliabilityPanelProps> = ({
       </div>
 
       {/* Out-of-Distribution (OOD) & Uncertainty */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-        <div className="p-3 rounded-lg bg-slate-900/50 border border-slate-800">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1">
-            Out-of-Distribution (OOD) Warning
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+        <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/90 shadow-2xs">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-amber-800 font-bold block mb-1">
+            Unusual Scan Warning (Out-of-Distribution)
           </span>
-          <span className="font-mono text-slate-300 font-medium">
-            {reliabilityInfo.oodWarning ? reliabilityInfo.oodWarning : 'OOD Detector Inactive (Offline)'}
+          <span className="font-sans text-amber-950 font-bold text-sm block">
+            {reliabilityInfo.oodWarning ? reliabilityInfo.oodWarning : 'Scanner Check Inactive (Offline)'}
           </span>
-          <p className="mt-1 text-[10px] text-slate-400 leading-tight">
-            Requires backend ensemble variance test to flag out-of-distribution scanner geometries or artifacts.
+          <p className="mt-1.5 text-xs text-slate-700 leading-relaxed font-medium">
+            Checks if an MRI scan looks too different from typical scans (e.g. unusual scanner brands or imaging artifacts).
           </p>
         </div>
 
-        <div className="p-3 rounded-lg bg-slate-900/50 border border-slate-800">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1">
-            Epistemic Uncertainty Estimation
+        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 shadow-2xs">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-600 font-bold block mb-1">
+            AI Confidence & Doubt Check (Uncertainty)
           </span>
-          <span className="font-mono text-slate-400 font-semibold">Not available</span>
-          <p className="mt-1 text-[10px] text-slate-400 leading-tight">
-            Uncertainty voxel heatmaps require Monte Carlo dropout passes on the backend GPU. Not manufactured client-side.
+          <span className="font-sans text-slate-900 font-bold text-sm block">Requires AI Server GPU</span>
+          <p className="mt-1.5 text-xs text-slate-700 leading-relaxed font-medium">
+            Measures how confident the AI is around tricky tumor borders. Requires deep neural network GPU passes.
           </p>
         </div>
       </div>
 
       {/* Case-specific Evaluation Metrics */}
-      <div className="p-3 rounded-xl bg-slate-900/70 border border-slate-800">
-        <h4 className="text-xs font-semibold text-slate-800 mb-1 flex items-center gap-1.5 font-mono">
-          <Activity className="w-3.5 h-3.5 text-violet-400" />
-          Case-Specific Accuracy & Overlap Evaluation
+      <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
+        <h4 className="text-xs font-bold text-slate-950 mb-2 flex items-center gap-1.5 font-sans">
+          <Activity className="w-4 h-4 text-violet-600" />
+          How Accurately Did the AI Find the Tumor in This Scan?
         </h4>
         {hasExpert ? (
-          <div className="space-y-2 mt-2 font-mono text-xs">
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="p-2 rounded bg-slate-950 border border-cyan-500/30">
-                <span className="text-[10px] text-sky-600 block">WT Dice (DSC)</span>
-                <span className="text-base font-bold text-white">{(metrics.wtDice! * 100).toFixed(1)}%</span>
-                <span className="text-[9px] text-slate-400 block">Sensitivity: {(metrics.wtSensitivity! * 100).toFixed(1)}%</span>
+          <div className="space-y-3 mt-3 font-sans text-xs">
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="p-3.5 rounded-xl bg-sky-50/80 border border-sky-200">
+                <span className="text-[10px] font-mono font-bold text-sky-800 uppercase block mb-1">Whole Tumor Match (WT)</span>
+                <span className="text-2xl font-black font-mono text-slate-950">{(metrics.wtDice! * 100).toFixed(1)}%</span>
+                <span className="text-xs text-slate-700 font-mono font-medium block mt-1">Catch Rate: {(metrics.wtSensitivity! * 100).toFixed(1)}%</span>
               </div>
-              <div className="p-2 rounded bg-slate-950 border border-violet-500/30">
-                <span className="text-[10px] text-violet-400 block">TC Dice (DSC)</span>
-                <span className="text-base font-bold text-white">{(metrics.tcDice! * 100).toFixed(1)}%</span>
-                <span className="text-[9px] text-slate-400 block">Sensitivity: {(metrics.tcSensitivity! * 100).toFixed(1)}%</span>
+              <div className="p-3.5 rounded-xl bg-violet-50/80 border border-violet-200">
+                <span className="text-[10px] font-mono font-bold text-violet-800 uppercase block mb-1">Tumor Core Match (TC)</span>
+                <span className="text-2xl font-black font-mono text-slate-950">{(metrics.tcDice! * 100).toFixed(1)}%</span>
+                <span className="text-xs text-slate-700 font-mono font-medium block mt-1">Catch Rate: {(metrics.tcSensitivity! * 100).toFixed(1)}%</span>
               </div>
-              <div className="p-2 rounded bg-slate-950 border border-amber-500/30">
-                <span className="text-[10px] text-amber-400 block">ET Dice (DSC)</span>
-                <span className="text-base font-bold text-white">{(metrics.etDice! * 100).toFixed(1)}%</span>
-                <span className="text-[9px] text-slate-400 block">Sensitivity: {(metrics.etSensitivity! * 100).toFixed(1)}%</span>
+              <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200">
+                <span className="text-[10px] font-mono font-bold text-amber-800 uppercase block mb-1">Active Tumor Match (ET)</span>
+                <span className="text-2xl font-black font-mono text-slate-950">{(metrics.etDice! * 100).toFixed(1)}%</span>
+                <span className="text-xs text-slate-700 font-mono font-medium block mt-1">Catch Rate: {(metrics.etSensitivity! * 100).toFixed(1)}%</span>
               </div>
             </div>
-            <p className="text-[10px] text-slate-400 italic">
-              *Evaluated against user-uploaded expert ground truth segmentation mask using real voxel overlap equations.
+            <p className="text-xs text-slate-600 font-medium italic mt-2">
+              *Calculated by comparing the AI's tumor outline directly against the doctor's hand-drawn tumor map.
             </p>
           </div>
         ) : (
-          <p className="text-[11px] text-slate-400 font-mono mt-1">
-            “Case-specific accuracy cannot be calculated without an expert ground truth mask.” Upload an expert mask slot to generate real Dice and sensitivity scores.
+          <p className="text-xs text-slate-700 font-medium mt-1 leading-relaxed">
+            “To measure accuracy, upload the doctor's tumor map (Ground Truth).” Once loaded, the system will calculate exact match percentages (Dice score and catch rate).
           </p>
         )}
       </div>
 
       {/* Known Limitations */}
-      <div>
-        <h4 className="text-xs font-semibold text-slate-800 mb-1.5 flex items-center gap-1.5">
-          <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-          Documented Methodological Limitations
+      <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
+        <h4 className="text-xs font-bold text-slate-950 mb-2 flex items-center gap-1.5 font-sans">
+          <AlertTriangle className="w-4 h-4 text-amber-600" />
+          Important Safety Notes & Limitations
         </h4>
-        <ul className="space-y-1 list-disc list-inside text-[11px] text-slate-400">
+        <ul className="space-y-1.5 list-disc list-inside text-xs text-slate-800 font-medium">
           {reliabilityInfo.knownLimitations.map((lim, idx) => (
             <li key={idx} className="leading-relaxed">
-              <span className="text-slate-300">{lim}</span>
+              <span className="text-slate-800">{lim}</span>
             </li>
           ))}
         </ul>

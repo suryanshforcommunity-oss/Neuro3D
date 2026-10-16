@@ -24,7 +24,7 @@ export const ShowcaseBrain3D: React.FC<ShowcaseBrain3DProps> = ({
   const wtMeshRef = useRef<THREE.Mesh | null>(null);
   const tcMeshRef = useRef<THREE.Mesh | null>(null);
   const etMeshRef = useRef<THREE.Mesh | null>(null);
-  const tumourBeaconRef = useRef<THREE.Line | null>(null);
+  const tumourBeaconRef = useRef<THREE.Object3D | null>(null);
 
   // Sync tumour visibility when props change
   useEffect(() => {
@@ -131,16 +131,43 @@ export const ShowcaseBrain3D: React.FC<ShowcaseBrain3DProps> = ({
 
       // Translucent medical cortex material
       const mat = new THREE.MeshStandardMaterial({
-        color: 0x334155, // Slate cortex
-        roughness: 0.35,
-        metalness: 0.15,
+        color: 0x0ea5e9, // Electric medical blue matching brain1.jpg
+        emissive: 0x0284c7,
+        emissiveIntensity: 0.6,
+        roughness: 0.22,
+        metalness: 0.35,
         transparent: true,
-        opacity: 0.72,
+        opacity: 0.78,
         side: THREE.DoubleSide,
       });
 
+      // Load brain1.jpg with circular vignette mask so no square box edges ever appear
+      const img = new Image();
+      img.src = '/brain1.jpg';
+      img.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = 512;
+        c.height = 512;
+        const ctx = c.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, 512, 512);
+          ctx.globalCompositeOperation = 'destination-in';
+          const grad = ctx.createRadialGradient(256, 256, 120, 256, 256, 240);
+          grad.addColorStop(0, 'rgba(0,0,0,1)');
+          grad.addColorStop(0.75, 'rgba(0,0,0,0.85)');
+          grad.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, 512, 512);
+
+          const tex = new THREE.CanvasTexture(c);
+          tex.colorSpace = THREE.SRGBColorSpace;
+          mat.map = tex;
+          mat.emissiveMap = tex;
+          mat.needsUpdate = true;
+        }
+      };
+
       const mesh = new THREE.Mesh(geom, mat);
-      // Offset slightly away from sagittal midline
       mesh.position.x = isLeft ? 1.8 : -1.8;
       return mesh;
     };
@@ -149,6 +176,40 @@ export const ShowcaseBrain3D: React.FC<ShowcaseBrain3DProps> = ({
     const rightHemi = createHemisphere(false);
     brainGroup.add(leftHemi);
     brainGroup.add(rightHemi);
+
+    // Soft holographic neural fiber disc inside brainGroup with smooth radial falloff
+    const discCanvas = document.createElement('canvas');
+    discCanvas.width = 512;
+    discCanvas.height = 512;
+    const discCtx = discCanvas.getContext('2d');
+    const discImg = new Image();
+    discImg.src = '/brain1.jpg';
+    discImg.onload = () => {
+      if (discCtx) {
+        discCtx.drawImage(discImg, 0, 0, 512, 512);
+        discCtx.globalCompositeOperation = 'destination-in';
+        const grad = discCtx.createRadialGradient(256, 256, 100, 256, 256, 230);
+        grad.addColorStop(0, 'rgba(0,0,0,1)');
+        grad.addColorStop(0.7, 'rgba(0,0,0,0.7)');
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        discCtx.fillStyle = grad;
+        discCtx.fillRect(0, 0, 512, 512);
+
+        const discTex = new THREE.CanvasTexture(discCanvas);
+        discTex.colorSpace = THREE.SRGBColorSpace;
+        const discGeom = new THREE.CircleGeometry(28, 48);
+        const discMat = new THREE.MeshBasicMaterial({
+          map: discTex,
+          transparent: true,
+          opacity: 0.65,
+          blending: THREE.AdditiveBlending,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+        });
+        const discMesh = new THREE.Mesh(discGeom, discMat);
+        brainGroup.add(discMesh);
+      }
+    };
 
     // Anatomical Brainstem & Cerebellum (inferior posterior)
     const cerebellumGeom = new THREE.SphereGeometry(14, 32, 24);
@@ -194,7 +255,7 @@ export const ShowcaseBrain3D: React.FC<ShowcaseBrain3DProps> = ({
     const wtMat = new THREE.MeshStandardMaterial({
       color: 0x06b6d4, // Cyan
       emissive: 0x0891b2,
-      emissiveIntensity: 0.45,
+      emissiveIntensity: 0.5,
       roughness: 0.2,
       metalness: 0.3,
       transparent: true,
@@ -209,7 +270,7 @@ export const ShowcaseBrain3D: React.FC<ShowcaseBrain3DProps> = ({
     const tcMat = new THREE.MeshStandardMaterial({
       color: 0x8b5cf6, // Violet
       emissive: 0x7c3aed,
-      emissiveIntensity: 0.55,
+      emissiveIntensity: 0.6,
       roughness: 0.25,
       metalness: 0.3,
       transparent: true,
@@ -224,7 +285,7 @@ export const ShowcaseBrain3D: React.FC<ShowcaseBrain3DProps> = ({
     const etMat = new THREE.MeshStandardMaterial({
       color: 0xf59e0b, // Amber Gold
       emissive: 0xd97706,
-      emissiveIntensity: 0.85,
+      emissiveIntensity: 0.9,
       roughness: 0.15,
       metalness: 0.4,
       transparent: true,
@@ -234,22 +295,17 @@ export const ShowcaseBrain3D: React.FC<ShowcaseBrain3DProps> = ({
     tumourContainer.add(etMesh);
     etMeshRef.current = etMesh;
 
-    // Floating Target Pointer Line from Tumour to Callout
-    const pointerPoints = [
-      new THREE.Vector3(0, 0, 0),
-      new THREE.Vector3(12, 16, 12),
-      new THREE.Vector3(24, 16, 12),
-    ];
-    const pointerGeom = new THREE.BufferGeometry().setFromPoints(pointerPoints);
-    const pointerMat = new THREE.LineBasicMaterial({
+    // Clean Reticle Targeting Ring around Tumour (Pulsing Medical Locator)
+    const ringGeom = new THREE.RingGeometry(10, 11, 32);
+    const ringMat = new THREE.MeshBasicMaterial({
       color: 0x38bdf8,
       transparent: true,
-      opacity: 0.85,
-      linewidth: 2,
+      opacity: 0.7,
+      side: THREE.DoubleSide,
     });
-    const pointerLine = new THREE.Line(pointerGeom, pointerMat);
-    tumourContainer.add(pointerLine);
-    tumourBeaconRef.current = pointerLine;
+    const ringMesh = new THREE.Mesh(ringGeom, ringMat);
+    tumourContainer.add(ringMesh);
+    tumourBeaconRef.current = ringMesh;
 
     // Target callout beacon pulsing sprite
     const beaconCanvas = document.createElement('canvas');

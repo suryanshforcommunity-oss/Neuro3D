@@ -52,38 +52,44 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-slate-100/90 text-slate-800 overflow-hidden font-sans">
+    <div className="flex flex-col h-screen w-screen bg-slate-100/90 text-slate-800 overflow-hidden font-sans print:h-auto print:w-auto print:overflow-visible print:bg-white print:block">
       {/* 1. Regulatory Mandatory Disclaimer Banner */}
-      <DisclaimerBanner />
+      <div className="no-print">
+        <DisclaimerBanner />
+      </div>
 
       {/* 2. Top Station Toolbar */}
-      <TopToolbar
-        studyId={state.provenance?.studyId || 'No Case Loaded'}
-        isDemoMode={state.isDemoMode}
-        backendStatus={state.backendStatus}
-        backendUrl={state.backendUrl}
-        onCheckBackend={state.checkBackendHealth}
-        onResetView={state.resetView}
-        onOpenUpload={() => state.setIsUploadModalOpen(true)}
-        onOpenHelp={() => state.setIsHelpModalOpen(true)}
-        onLoadDemo={state.loadDemoCase}
-        onGoHome={() => state.setActivePage('landing')}
-        activeSequence={state.activeSequence}
-        onSelectSequence={state.setActiveSequence}
-        crosshair={state.crosshair}
-        worldCoordinate={state.worldCoordinate}
-      />
+      <div className="no-print">
+        <TopToolbar
+          studyId={state.provenance?.studyId || 'No Case Loaded'}
+          isDemoMode={state.isDemoMode}
+          backendStatus={state.backendStatus}
+          backendUrl={state.backendUrl}
+          onCheckBackend={state.checkBackendHealth}
+          onResetView={state.resetView}
+          onOpenUpload={() => state.setIsUploadModalOpen(true)}
+          onOpenHelp={() => state.setIsHelpModalOpen(true)}
+          onLoadDemo={state.loadDemoCase}
+          onGoHome={() => state.setActivePage('landing')}
+          activeSequence={state.activeSequence}
+          onSelectSequence={state.setActiveSequence}
+          crosshair={state.crosshair}
+          worldCoordinate={state.worldCoordinate}
+        />
+      </div>
 
       {/* 3. Main Workspace Area: Sidebar + Active Page */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden print:overflow-visible print:h-auto print:block">
         {/* Left Navigation Sidebar */}
-        <Sidebar
-          activePage={state.activePage}
-          onSelectPage={state.setActivePage}
-        />
+        <div className="no-print">
+          <Sidebar
+            activePage={state.activePage}
+            onSelectPage={state.setActivePage}
+          />
+        </div>
 
         {/* Dynamic Center Workstation Page */}
-        <main className="flex-1 flex flex-col overflow-hidden bg-slate-100/60">
+        <main className="flex-1 flex flex-col overflow-hidden bg-slate-100/60 print:overflow-visible print:h-auto print:bg-white print:block">
           {state.activePage === 'workspace' && (
             <WorkspacePage
               crosshair={state.crosshair}

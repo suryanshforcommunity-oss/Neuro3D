@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   Layers,
   ArrowRight,
+  Sparkles,
 } from 'lucide-react';
 import { UploadedSequence, MriSequenceType } from '../../types';
 import { SequenceSlotCard } from './SequenceSlotCard';
@@ -35,63 +36,69 @@ export const NiftiUploadModal: React.FC<NiftiUploadModalProps> = ({
     return validateSequenceConsistency(sequences);
   }, [sequences]);
 
+  const requiredSequences = ['T1', 'T1Gd', 'T2', 'FLAIR'];
   const requiredLoaded = sequences.filter(
-    s => s.isLoaded && s.isValid && ['T1', 'T1Gd', 'T2', 'FLAIR'].includes(s.sequenceType)
+    s => s.isLoaded && s.isValid && requiredSequences.includes(s.sequenceType)
   ).length;
 
+  const isReady = requiredLoaded === 4 && consistency.isConsistent;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-      <div className="bg-[#0B0F1A] border border-[#1E293B] rounded-2xl w-full max-w-4xl max-h-[90vh] shadow-2xl flex flex-col overflow-hidden select-none">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in duration-150">
+      <div className="bg-white border border-slate-200/90 rounded-2xl w-full max-w-4xl max-h-[92vh] shadow-2xl flex flex-col overflow-hidden select-none">
         {/* Header */}
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-[#0E1322]">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center">
-              <UploadCloud className="w-4 h-4 text-sky-600" />
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-sky-100 border border-sky-200 flex items-center justify-center flex-shrink-0">
+              <UploadCloud className="w-5 h-5 text-sky-700" />
             </div>
             <div>
-              <h2 className="font-semibold text-slate-900 text-sm">
-                4-Sequence NIfTI Study Upload & Pre-Validation
+              <h2 className="font-bold text-slate-950 text-base font-display">
+                Upload 3D MRI Brain Scans
               </h2>
-              <p className="text-[11px] text-slate-500 font-mono">
-                BraTS Protocol: T1, T1-Contrast, T2, FLAIR + Optional Expert Mask
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                Standard Brain MRI Set: T1, T1-Gd (Contrast), T2, and FLAIR Scans (.nii or .nii.gz)
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-500 hover:text-slate-800 transition"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
+            title="Close"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Security & Privacy Banner */}
-        <div className="px-5 py-2.5 bg-slate-900/60 border-b border-slate-800/80 flex items-center gap-2 text-xs text-slate-600">
-          <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+        {/* Security & Client-Side Privacy Guarantee */}
+        <div className="px-6 py-2.5 bg-emerald-50/70 border-b border-emerald-100 flex items-center gap-2.5 text-xs text-emerald-950 font-medium">
+          <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
           <span>
-            <strong className="text-white">Client-Side Privacy Guarantee:</strong> All NIfTI headers and arrays are parsed directly in your local browser sandbox. No medical data is sent over the network until you explicitly trigger backend segmentation.
+            <strong className="font-bold text-emerald-900">100% Private & Secure:</strong> MRI scans are read directly inside your browser. No medical scan data leaves your computer without your explicit permission.
           </span>
         </div>
 
-        {/* Main Body */}
-        <div className="p-5 flex-1 overflow-y-auto space-y-4">
+        {/* Modal Main Body */}
+        <div className="p-6 flex-1 overflow-y-auto space-y-4">
           {/* Consistency validation alert */}
           {!consistency.isConsistent && consistency.errors.length > 0 && (
-            <div className="p-3.5 rounded-xl bg-rose-950/40 border border-rose-500/40 text-xs text-rose-300 space-y-1">
-              <div className="flex items-center gap-2 font-semibold font-mono text-rose-400">
-                <AlertTriangle className="w-4 h-4" />
-                <span>Sequence Dimension or Spatial Matrix Discrepancy</span>
+            <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-950 space-y-1.5 shadow-2xs">
+              <div className="flex items-center gap-2 font-bold text-amber-900">
+                <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                <span>Scan Dimension or Pixel Spacing Mismatch Detected</span>
               </div>
-              {consistency.errors.map((err, idx) => (
-                <p key={idx} className="leading-relaxed">
-                  {err}
-                </p>
-              ))}
+              <ul className="list-disc list-inside space-y-0.5 text-slate-700 pl-1 font-medium">
+                {consistency.errors.map((err, idx) => (
+                  <li key={idx} className="leading-relaxed">
+                    {err}
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
-          {/* Slots Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {/* Structured Linear Sequence Checklist (No Bubble Grids!) */}
+          <div className="border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100 bg-white shadow-xs">
             {sequences.map(slot => (
               <SequenceSlotCard
                 key={slot.sequenceType}
@@ -104,16 +111,40 @@ export const NiftiUploadModal: React.FC<NiftiUploadModalProps> = ({
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-[#1E293B] bg-[#0E1322] flex items-center justify-between text-xs font-mono">
-          <div className="text-slate-500">
-            Loaded: <span className="text-cyan-300 font-semibold">{requiredLoaded}/4</span> required modalities
+        {/* Modal Footer */}
+        <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          {/* Progress Tracker */}
+          <div className="flex items-center gap-3">
+            <span className="font-semibold text-slate-700">
+              Scans Loaded:
+            </span>
+            <div className="flex items-center gap-1.5">
+              {requiredSequences.map(type => {
+                const isLoaded = sequences.find(s => s.sequenceType === type)?.isLoaded;
+                return (
+                  <span
+                    key={type}
+                    className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border transition ${
+                      isLoaded
+                        ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                        : 'bg-slate-200/80 text-slate-500 border-slate-300'
+                    }`}
+                  >
+                    {type}
+                  </span>
+                );
+              })}
+            </div>
+            <span className="text-slate-500 font-mono text-[11px] font-medium">
+              ({requiredLoaded}/4 required)
+            </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2.5">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-600 transition"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-950 hover:bg-slate-200/70 border border-slate-200 bg-white transition"
             >
               Cancel
             </button>
@@ -123,9 +154,9 @@ export const NiftiUploadModal: React.FC<NiftiUploadModalProps> = ({
                 onClose();
               }}
               disabled={requiredLoaded === 0}
-              className="flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white font-medium shadow-md shadow-cyan-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs shadow-sm disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
-              <span>Load into Workstation</span>
+              <span>Open Scans in 3D Viewer</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>

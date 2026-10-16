@@ -9,7 +9,7 @@ interface ReportsPageProps {
 
 export const ReportsPage: React.FC<ReportsPageProps> = ({ provenance, reliabilityInfo }) => {
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto print:overflow-visible print:h-auto print:block">
       <ProvenanceReportView provenance={provenance} reliabilityInfo={reliabilityInfo} />
     </div>
   );

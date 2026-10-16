@@ -107,3 +107,45 @@ def test_compute_evaluation_metrics():
     assert metrics["wt_sensitivity"] == 1.0
     assert metrics["tc_sensitivity"] == 1.0
     assert metrics["et_sensitivity"] == 1.0
+
+
+def test_evaluation_metrics_both_empty():
+    pred = np.zeros((10, 10, 10), dtype=np.uint8)
+    expert = np.zeros((10, 10, 10), dtype=np.uint8)
+    metrics = compute_evaluation_metrics(pred, expert)
+    assert metrics["wt_dice"] == 1.0
+    assert metrics["tc_dice"] == 1.0
+    assert metrics["et_dice"] == 1.0
+
+
+def test_evaluation_metrics_false_positives_only():
+    # Prediction has tumor voxels, but expert ground truth is completely healthy (0)
+    pred = np.zeros((10, 10, 10), dtype=np.uint8)
+    pred[2:5, 2:5, 2:5] = LABEL_ET
+    expert = np.zeros((10, 10, 10), dtype=np.uint8)
+    metrics = compute_evaluation_metrics(pred, expert)
+    assert metrics["wt_dice"] == 0.0
+    assert metrics["tc_dice"] == 0.0
+    assert metrics["et_dice"] == 0.0
+
+
+def test_evaluation_metrics_false_negatives_only():
+    # Expert has tumor, but model predicted nothing (missed detection)
+    pred = np.zeros((10, 10, 10), dtype=np.uint8)
+    expert = np.zeros((10, 10, 10), dtype=np.uint8)
+    expert[2:5, 2:5, 2:5] = LABEL_ET
+    metrics = compute_evaluation_metrics(pred, expert)
+    assert metrics["wt_dice"] == 0.0
+    assert metrics["et_dice"] == 0.0
+    assert metrics["et_sensitivity"] == 0.0
+
+
+def test_evaluation_metrics_spatial_misalignment():
+    # Both have 27 voxels of ET, but at different non-overlapping coordinates
+    pred = np.zeros((20, 20, 20), dtype=np.uint8)
+    expert = np.zeros((20, 20, 20), dtype=np.uint8)
+    pred[0:3, 0:3, 0:3] = LABEL_ET
+    expert[10:13, 10:13, 10:13] = LABEL_ET
+    metrics = compute_evaluation_metrics(pred, expert)
+    assert metrics["et_dice"] == 0.0
+    assert metrics["et_sensitivity"] == 0.0
