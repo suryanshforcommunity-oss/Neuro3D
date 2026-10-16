@@ -60,7 +60,7 @@ export const authApi = {
             id: 'pat_001',
             patientId: 'PAT-2026-0042',
             role: 'patient',
-            name: 'Eleanor Vance',
+            name: 'Aarav Sharma',
             email: 'patient@neuroscope.ai',
             treatingDoctor: 'Dr. Sarah Chen, MD',
             hospital: 'Memorial Neurological Institute',
@@ -110,7 +110,7 @@ export const authApi = {
     return {
       status: 'success',
       patient: {
-        name: 'Eleanor Vance',
+        name: 'Aarav Sharma',
         patientId: 'PAT-2026-0042',
         dateOfBirth: '1978-04-12',
         treatingDoctor: 'Dr. Sarah Chen, MD',
@@ -124,7 +124,7 @@ export const authApi = {
         {
           studyId: 'STUDY_2025_11_PAT0042',
           patientId: 'PAT-2026-0042',
-          patientName: 'Eleanor Vance',
+          patientName: 'Aarav Sharma',
           examinationDate: '2025-11-14T09:30:00Z',
           displayDate: 'Nov 14, 2025',
           facility: 'Memorial Neurological Institute',
@@ -155,7 +155,7 @@ export const authApi = {
         {
           studyId: 'STUDY_2026_01_PAT0042',
           patientId: 'PAT-2026-0042',
-          patientName: 'Eleanor Vance',
+          patientName: 'Aarav Sharma',
           examinationDate: '2026-01-22T11:15:00Z',
           displayDate: 'Jan 22, 2026',
           facility: 'Memorial Neurological Institute',
@@ -186,7 +186,7 @@ export const authApi = {
         {
           studyId: 'STUDY_2026_03_PAT0042',
           patientId: 'PAT-2026-0042',
-          patientName: 'Eleanor Vance',
+          patientName: 'Aarav Sharma',
           examinationDate: '2026-03-28T14:00:00Z',
           displayDate: 'Mar 28, 2026',
           facility: 'Memorial Neurological Institute',

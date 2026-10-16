@@ -301,7 +301,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 onClick={() => handlePreFill('patient')}
                 className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 hover:border-teal-200 text-slate-700 text-[11px] font-semibold text-left transition"
               >
-                <div className="text-teal-700 font-bold">👤 Eleanor Vance</div>
+                <div className="text-teal-700 font-bold">👤 Aarav Sharma</div>
                 <div className="text-[10px] text-slate-500 truncate">PAT-2026-0042</div>
               </button>
             </div>

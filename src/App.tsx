@@ -15,10 +15,17 @@ import { LandingPage } from './pages/LandingPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthModal } from './components/auth/AuthModal';
 import { PatientPortalPage } from './pages/PatientPortalPage';
+import { LoginPage } from './pages/LoginPage';
 
 const AppContent: React.FC = () => {
   const state = useNeuroScopeState();
-  const { role, openAuthModal } = useAuth();
+  const { isAuthenticated, user, role, openAuthModal } = useAuth();
+
+  // MANDATORY SECURITY GATE:
+  // Cannot use the website without authenticating as doctor or patient
+  if (!isAuthenticated || !user) {
+    return <LoginPage />;
+  }
 
   // If authenticated as a Patient, display dedicated Patient Portal
   if (role === 'patient') {
@@ -32,7 +39,7 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // If user is on the SaaS Landing Page
+  // If authenticated as Doctor and on the Product Overview / Landing Page
   if (state.activePage === 'landing') {
     return (
       <div className="h-screen w-screen bg-slate-50 overflow-y-auto font-sans">

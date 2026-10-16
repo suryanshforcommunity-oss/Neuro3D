@@ -58,7 +58,7 @@ def test_patient_login_success():
     data = res.json()
     assert data["status"] == "success"
     assert data["role"] == "patient"
-    assert data["user"]["name"] == "Eleanor Vance"
+    assert data["user"]["name"] == "Aarav Sharma"
 
 
 def test_login_invalid_credentials_rejected():
@@ -84,7 +84,7 @@ def test_patient_dashboard_authorization_and_records():
     dash_res = client.get("/api/v1/patient/dashboard", headers={"Authorization": f"Bearer {token}"})
     assert dash_res.status_code == 200
     data = dash_res.json()
-    assert data["patient"]["name"] == "Eleanor Vance"
+    assert data["patient"]["name"] == "Aarav Sharma"
     assert len(data["examinations"]) == 3
     assert data["trend"]["hasComparison"] is True
     assert data["trend"]["percentageChange"] == -7.3
@@ -124,6 +124,6 @@ def test_patient_report_endpoint():
     )
     assert report_res.status_code == 200
     report = report_res.json()
-    assert report["patientName"] == "Eleanor Vance"
+    assert report["patientName"] == "Aarav Sharma"
     assert report["volumes"]["wtVolumeMl"] == 29.75
     assert "whatThisMeans" in report["plainLanguageExplanation"]

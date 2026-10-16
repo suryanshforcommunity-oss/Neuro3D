@@ -13,7 +13,7 @@ PATIENT_EXAMINATIONS: Dict[str, List[Dict[str, Any]]] = {
         {
             "studyId": "STUDY_2025_11_PAT0042",
             "patientId": "PAT-2026-0042",
-            "patientName": "Eleanor Vance",
+            "patientName": "Aarav Sharma",
             "examinationDate": "2025-11-14T09:30:00Z",
             "displayDate": "Nov 14, 2025",
             "facility": "Memorial Neurological Institute",
@@ -44,7 +44,7 @@ PATIENT_EXAMINATIONS: Dict[str, List[Dict[str, Any]]] = {
         {
             "studyId": "STUDY_2026_01_PAT0042",
             "patientId": "PAT-2026-0042",
-            "patientName": "Eleanor Vance",
+            "patientName": "Aarav Sharma",
             "examinationDate": "2026-01-22T11:15:00Z",
             "displayDate": "Jan 22, 2026",
             "facility": "Memorial Neurological Institute",
@@ -75,7 +75,7 @@ PATIENT_EXAMINATIONS: Dict[str, List[Dict[str, Any]]] = {
         {
             "studyId": "STUDY_2026_03_PAT0042",
             "patientId": "PAT-2026-0042",
-            "patientName": "Eleanor Vance",
+            "patientName": "Aarav Sharma",
             "examinationDate": "2026-03-28T14:00:00Z",
             "displayDate": "Mar 28, 2026",
             "facility": "Memorial Neurological Institute",
@@ -108,7 +108,7 @@ PATIENT_EXAMINATIONS: Dict[str, List[Dict[str, Any]]] = {
         {
             "studyId": "STUDY_2026_02_PAT0108",
             "patientId": "PAT-2026-0108",
-            "patientName": "James R. Wilson",
+            "patientName": "Priya Patel",
             "examinationDate": "2026-02-18T10:00:00Z",
             "displayDate": "Feb 18, 2026",
             "facility": "Memorial Neurological Institute",
