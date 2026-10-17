@@ -565,6 +565,21 @@ export const BrainViewer3D: React.FC<BrainViewer3DProps> = ({
         </div>
       )}
 
+      {/* Floating Linked Crosshair Telemetry HUD (Bottom Left) */}
+      <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-xl bg-slate-950/85 border border-slate-800/80 backdrop-blur-md text-[10px] font-mono text-slate-300 pointer-events-none flex items-center gap-2.5 shadow-md z-10">
+        <div className="flex items-center gap-1 text-sky-400 font-bold">
+          <CrosshairIcon className="w-3 h-3" />
+          <span>LINKED CROSSHAIR:</span>
+        </div>
+        <span className="text-slate-400">
+          Voxel: <strong className="text-white font-bold">[{voxelCoordinate.i}, {voxelCoordinate.j}, {voxelCoordinate.k}]</strong>
+        </span>
+        <span className="text-slate-600">|</span>
+        <span>
+          World: <strong className="text-sky-400 font-bold">({worldCoordinate.x.toFixed(1)}, {worldCoordinate.y.toFixed(1)}, {worldCoordinate.z.toFixed(1)}) mm</strong>
+        </span>
+      </div>
+
       {/* Orbit Interaction Hint (Bottom Right) */}
       <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded bg-white/90 border border-slate-200/80 backdrop-blur-sm text-[10px] font-mono text-slate-600 pointer-events-none flex items-center gap-3 shadow-2xs">
         <span>Left Click + Drag: Rotate</span>

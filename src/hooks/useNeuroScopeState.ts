@@ -47,16 +47,16 @@ export function useNeuroScopeState() {
   const [backendUrl, setBackendUrl] = useState<string>(apiClient.getBaseUrl());
   const [backendError, setBackendError] = useState<string | null>(null);
 
-  // Volume geometry state
-  const [dimensions, setDimensions] = useState<VolumeDimensions>({ dimX: 128, dimY: 128, dimZ: 96 });
+  // Volume geometry state (standard BraTS 2021 clinical dataset dimensions)
+  const [dimensions, setDimensions] = useState<VolumeDimensions>({ dimX: 240, dimY: 240, dimZ: 155 });
   const [spacing, setSpacing] = useState<VoxelSpacing>({ x: 1.0, y: 1.0, z: 1.0 });
   const [affine, setAffine] = useState<AffineMatrix>(DEFAULT_IDENTITY_AFFINE);
 
-  // Canonical crosshair coordinate
+  // Canonical crosshair coordinate (BraTS standard suspected tumor focus)
   const [crosshair, setCrosshairState] = useState<VoxelCoordinate>({
-    i: 64 + 18, // Point directly at the demo tumour initially
-    j: 64 + 6,
-    k: 48 + 4,
+    i: 109,
+    j: 138,
+    k: 81,
   });
 
   // Uploaded sequence slots

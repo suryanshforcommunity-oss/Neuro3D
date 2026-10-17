@@ -172,8 +172,8 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
 
       {/* Right section: Coordinates & Actions */}
       <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-        {/* Real-time canonical coordinates display (only on 2xl to never wrap or push items out) */}
-        <div className="hidden 2xl:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-300 text-xs font-mono whitespace-nowrap flex-shrink-0">
+        {/* Real-time canonical coordinates display */}
+        <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-300 text-xs font-mono whitespace-nowrap flex-shrink-0">
           <Crosshair className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
           <span className="text-slate-600">
             Voxel: <strong className="text-slate-950 font-bold">({crosshair.i}, {crosshair.j}, {crosshair.k})</strong>

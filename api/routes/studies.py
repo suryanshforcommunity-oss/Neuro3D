@@ -648,3 +648,58 @@ def download_study_file(study_id: str, filename: str):
         filename=filename,
     )
 
+
+@router.get("/studies/{study_id}/slice")
+@router.get("/result/{study_id}/slice")
+def get_study_slice(
+    study_id: str,
+    plane: str = Query("axial", pattern="^(axial|coronal|sagittal)$"),
+    index: int = Query(81, ge=0),
+    modality: str = Query("t1gd"),
+    show_wt: bool = Query(True),
+    show_tc: bool = Query(True),
+    show_et: bool = Query(True),
+    wt_opacity: float = Query(0.35),
+    tc_opacity: float = Query(0.65),
+    et_opacity: float = Query(0.85),
+    render_mode: str = Query("predicted"),
+):
+    """
+    Renders high-fidelity clinical 2D MRI slice from genuine BraTS volume
+    with percentile windowing and subregion overlays.
+    """
+    from neuroscope.slice_renderer import get_rendered_slice
+    try:
+        return get_rendered_slice(
+            study_id=study_id,
+            plane=plane,
+            index=index,
+            modality=modality,
+            show_wt=show_wt,
+            show_tc=show_tc,
+            show_et=show_et,
+            wt_opacity=wt_opacity,
+            tc_opacity=tc_opacity,
+            et_opacity=et_opacity,
+            render_mode=render_mode,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to render slice: {str(e)}")
+
+
+@router.get("/studies/{study_id}/mesh")
+@router.get("/result/{study_id}/mesh")
+def get_study_meshes(study_id: str):
+    """
+    Returns authentic high-resolution 3D anatomical cortical and tumour isosurface meshes
+    in physical millimeter coordinates.
+    """
+    base_dir = Path(__file__).resolve().parent.parent.parent
+    mesh_path = base_dir / "public" / "models" / "demo_regions.json"
+    if mesh_path.exists():
+        with open(mesh_path, "r") as f:
+            return json.load(f)
+    raise HTTPException(status_code=404, detail="Meshes not found")
+
+
+

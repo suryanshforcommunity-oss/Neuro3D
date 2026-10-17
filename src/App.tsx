@@ -150,6 +150,8 @@ const AppContent: React.FC = () => {
               onChangeWindowLevel={state.setWindowLevel}
               onChangeClipping={state.setClippingPlanes}
               onResetCamera={state.resetView}
+              activeSequence={state.activeSequence}
+              onSelectSequence={state.setActiveSequence}
             />
           )}
 

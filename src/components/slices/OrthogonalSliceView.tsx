@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { SlicePanel } from './SlicePanel';
 import {
   VoxelCoordinate,
@@ -9,7 +9,8 @@ import {
   RegionVisibility,
   RegionOpacity,
 } from '../../types';
-import { Sliders, Sun, Contrast } from 'lucide-react';
+import { Sliders, Sun, Contrast, Crosshair } from 'lucide-react';
+import { voxelToWorld } from '../../utils/coordinates';
 
 interface OrthogonalSliceViewProps {
   crosshair: VoxelCoordinate;
@@ -47,11 +48,13 @@ export const OrthogonalSliceView: React.FC<OrthogonalSliceViewProps> = ({
     { label: 'Bright Tumor Focus', w: 190, l: 140 },
   ];
 
+  const worldCoord = useMemo(() => voxelToWorld(crosshair, affine), [crosshair, affine]);
+
   return (
     <div className="flex flex-col h-full bg-white p-3 gap-3">
-      {/* Window / Level Control Bar */}
+      {/* Window / Level & Linked Crosshair Readout Bar */}
       <div className="min-h-[40px] h-auto bg-slate-50 border border-slate-200/90 rounded-xl px-3.5 py-1.5 flex flex-wrap items-center justify-between gap-2.5 text-xs select-none shadow-2xs">
-        <div className="flex items-center gap-3.5">
+        <div className="flex items-center gap-3.5 flex-wrap">
           <div className="flex items-center gap-1.5 text-slate-950 font-mono text-xs font-bold">
             <Sliders className="w-3.5 h-3.5 text-sky-600" />
             <span>IMAGE ADJUSTMENTS:</span>
@@ -84,21 +87,35 @@ export const OrthogonalSliceView: React.FC<OrthogonalSliceViewProps> = ({
           </div>
         </div>
 
-        {/* Presets */}
-        <div className="flex items-center gap-1.5">
-          {presets.map(p => (
-            <button
-              key={p.label}
-              onClick={() => onChangeWindowLevel({ window: p.w, level: p.l })}
-              className={`px-2.5 py-1 rounded-lg text-xs font-mono font-semibold transition ${
-                windowLevel.window === p.w && windowLevel.level === p.l
-                  ? 'bg-sky-600 text-white font-bold shadow-xs border border-sky-600'
-                  : 'text-slate-700 hover:text-slate-950 hover:bg-slate-200/70 border border-slate-300 bg-white'
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
+        {/* Presets and Linked Crosshair Coordinates */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Linked Crosshair Badge */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 border border-sky-200 text-xs font-mono">
+            <Crosshair className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
+            <span className="text-slate-600">
+              Voxel: <strong className="text-slate-950 font-bold">({crosshair.i}, {crosshair.j}, {crosshair.k})</strong>
+            </span>
+            <span className="text-slate-300">|</span>
+            <span className="text-slate-600">
+              World: <strong className="text-sky-800 font-bold">({worldCoord.x.toFixed(1)}, {worldCoord.y.toFixed(1)}, {worldCoord.z.toFixed(1)}) mm</strong>
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            {presets.map(p => (
+              <button
+                key={p.label}
+                onClick={() => onChangeWindowLevel({ window: p.w, level: p.l })}
+                className={`px-2.5 py-1 rounded-lg text-xs font-mono font-semibold transition ${
+                  windowLevel.window === p.w && windowLevel.level === p.l
+                    ? 'bg-sky-600 text-white font-bold shadow-xs border border-sky-600'
+                    : 'text-slate-700 hover:text-slate-950 hover:bg-slate-200/70 border border-slate-300 bg-white'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
