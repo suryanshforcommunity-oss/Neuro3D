@@ -74,7 +74,7 @@ export const NiftiUploadModal: React.FC<NiftiUploadModalProps> = ({
         <div className="px-6 py-2.5 bg-emerald-50/70 border-b border-emerald-100 flex items-center gap-2.5 text-xs text-emerald-950 font-medium">
           <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
           <span>
-            <strong className="font-bold text-emerald-900">100% Private & Secure:</strong> MRI scans are read directly inside your browser. No medical scan data leaves your computer without your explicit permission.
+            <strong className="font-bold text-emerald-900">Private & Secure:</strong> MRI scans are read directly inside your browser. No medical scan data leaves your computer without your explicit permission.
           </span>
         </div>
 

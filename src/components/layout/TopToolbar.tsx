@@ -61,14 +61,14 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   ];
 
   return (
-    <header className="h-14 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 flex items-center justify-between text-sm select-none shadow-xs text-slate-900 gap-2">
+    <header className="h-14 bg-white/95 backdrop-blur-md border-b border-slate-200 px-3 sm:px-4 flex items-center justify-between text-sm select-none shadow-xs text-slate-900 gap-2 flex-nowrap overflow-hidden min-w-0">
       {/* Left section: Study info and status */}
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2 flex-shrink-0 min-w-0">
         {onGoHome && (
           <button
             onClick={onGoHome}
             title="Return to Homepage"
-            className="flex items-center gap-2 hover:opacity-85 transition cursor-pointer group pr-2.5 border-r border-slate-200"
+            className="flex items-center gap-2 hover:opacity-85 transition cursor-pointer group pr-2 border-r border-slate-200 flex-shrink-0"
           >
             <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 bg-white p-0.5 shadow-2xs group-hover:scale-105 transition-transform flex items-center justify-center">
               <img
@@ -77,27 +77,30 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className="font-bold text-xs tracking-tight text-slate-900 hidden sm:inline group-hover:text-sky-600 transition-colors">
+            <span className="font-bold text-xs tracking-tight text-slate-900 hidden sm:inline group-hover:text-sky-600 transition-colors whitespace-nowrap">
               NeuroScope 3D
             </span>
           </button>
         )}
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-shrink-0">
           <span className="text-slate-700 text-xs font-mono font-bold">CASE:</span>
-          <span className="font-mono text-xs font-bold text-sky-900 bg-sky-100/90 px-2 py-0.5 rounded-md border border-sky-300">
+          <span
+            title={studyId}
+            className="font-mono text-xs font-bold text-sky-900 bg-sky-100/90 px-2 py-0.5 rounded-md border border-sky-300 max-w-[130px] sm:max-w-[170px] truncate whitespace-nowrap"
+          >
             {studyId}
           </span>
         </div>
 
         {/* Data mode badge */}
         {isDemoMode ? (
-          <Badge variant="amber" size="sm" className="hidden sm:inline-flex">
+          <Badge variant="amber" size="sm" className="hidden lg:inline-flex flex-shrink-0 whitespace-nowrap">
             <Database className="w-3 h-3 text-amber-600" />
             SAMPLE DEMO
           </Badge>
         ) : (
-          <Badge variant="cyan" size="sm" className="hidden sm:inline-flex">
+          <Badge variant="cyan" size="sm" className="hidden lg:inline-flex flex-shrink-0 whitespace-nowrap">
             <Database className="w-3 h-3 text-sky-600" />
             RESEARCH SCAN
           </Badge>
@@ -107,10 +110,10 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         <div
           onClick={onCheckBackend}
           title={`AI Server Status (${backendUrl}). Click to re-check connection.`}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-300 text-[11px] font-mono cursor-pointer hover:border-slate-400 transition"
+          className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-300 text-[11px] font-mono cursor-pointer hover:border-slate-400 transition flex-shrink-0 whitespace-nowrap"
         >
           <Server
-            className={`w-3.5 h-3.5 ${
+            className={`w-3.5 h-3.5 flex-shrink-0 ${
               backendStatus === 'connected'
                 ? 'text-emerald-600'
                 : backendStatus === 'connecting'
@@ -137,8 +140,8 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
       </div>
 
       {/* Middle section: Sequence selector */}
-      <div className="hidden lg:flex items-center bg-slate-100 p-1 rounded-xl border border-slate-300 shadow-2xs">
-        <span className="text-[11px] uppercase text-slate-700 font-bold px-2.5 flex items-center gap-1.5 tracking-wider">
+      <div className="hidden lg:flex items-center bg-slate-100 p-1 rounded-xl border border-slate-300 shadow-2xs flex-shrink-0 whitespace-nowrap">
+        <span className="text-[11px] uppercase text-slate-700 font-bold px-2 flex items-center gap-1 tracking-wider">
           <Layers className="w-3.5 h-3.5 text-sky-600" />
           MRI View:
         </span>
@@ -147,7 +150,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             key={seq.id}
             onClick={() => onSelectSequence(seq.id)}
             title={seq.desc}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition whitespace-nowrap ${
               activeSequence === seq.id
                 ? 'bg-sky-600 text-white shadow-xs'
                 : 'text-slate-700 hover:text-slate-950 hover:bg-slate-200/80'
@@ -159,16 +162,16 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
       </div>
 
       {/* Right section: Coordinates & Actions */}
-      <div className="flex items-center gap-2">
-        {/* Real-time canonical coordinates display */}
-        <div className="hidden xl:flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-100 border border-slate-300 text-xs font-mono">
-          <Crosshair className="w-3.5 h-3.5 text-sky-600" />
-          <span className="text-slate-700">
-            Pixel (Voxel): <strong className="text-slate-950 font-bold">({crosshair.i}, {crosshair.j}, {crosshair.k})</strong>
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+        {/* Real-time canonical coordinates display (only on 2xl to never wrap or push items out) */}
+        <div className="hidden 2xl:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-300 text-xs font-mono whitespace-nowrap flex-shrink-0">
+          <Crosshair className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
+          <span className="text-slate-600">
+            Voxel: <strong className="text-slate-950 font-bold">({crosshair.i}, {crosshair.j}, {crosshair.k})</strong>
           </span>
-          <span className="text-slate-400">|</span>
-          <span className="text-slate-700">
-            Position: <strong className="text-sky-800 font-bold">({worldCoordinate.x.toFixed(1)}, {worldCoordinate.y.toFixed(1)}, {worldCoordinate.z.toFixed(1)}) mm</strong>
+          <span className="text-slate-300">|</span>
+          <span className="text-slate-600">
+            Pos: <strong className="text-sky-800 font-bold">({worldCoordinate.x.toFixed(1)}, {worldCoordinate.y.toFixed(1)}, {worldCoordinate.z.toFixed(1)}) mm</strong>
           </span>
         </div>
 
@@ -176,26 +179,27 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         <button
           onClick={onLoadDemo}
           title="Load sample 3D brain tumor demo case"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold transition"
+          className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold transition whitespace-nowrap flex-shrink-0 cursor-pointer"
         >
-          <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-          <span className="hidden sm:inline">Load Sample Demo</span>
+          <Sparkles className="w-3.5 h-3.5 text-indigo-600 flex-shrink-0" />
+          <span className="hidden xl:inline">Load Sample Demo</span>
+          <span className="xl:hidden">Sample</span>
         </button>
 
         {/* Upload Button */}
         <button
           onClick={onOpenUpload}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white shadow-xs text-xs font-semibold transition"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white shadow-xs text-xs font-semibold transition whitespace-nowrap flex-shrink-0 cursor-pointer"
         >
-          <UploadCloud className="w-3.5 h-3.5 text-white" />
-          <span className="hidden sm:inline">Upload MRI Scans</span>
+          <UploadCloud className="w-3.5 h-3.5 text-white flex-shrink-0" />
+          <span className="hidden md:inline">Upload MRI</span>
         </button>
 
         {/* Reset View Button */}
         <button
           onClick={onResetView}
           title="Reset 3D view and center crosshairs"
-          className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition shadow-2xs"
+          className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition shadow-2xs flex-shrink-0 cursor-pointer"
         >
           <RotateCcw className="w-4 h-4" />
         </button>
@@ -205,10 +209,10 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           <button
             onClick={onGoHome}
             title="Return to Product Overview & Landing Page"
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-sky-600 hover:bg-slate-50 text-xs font-medium transition shadow-2xs"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-sky-600 hover:bg-slate-50 text-xs font-medium transition shadow-2xs whitespace-nowrap flex-shrink-0 cursor-pointer"
           >
-            <Home className="w-3.5 h-3.5 text-sky-600" />
-            <span className="hidden md:inline">Overview</span>
+            <Home className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
+            <span className="hidden xl:inline">Overview</span>
           </button>
         )}
 
@@ -216,26 +220,26 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         <button
           onClick={onOpenHelp}
           title="Workstation User Guide & Research Specifications"
-          className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-sky-600 hover:bg-slate-50 transition shadow-2xs"
+          className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-sky-600 hover:bg-slate-50 transition shadow-2xs flex-shrink-0 cursor-pointer"
         >
           <HelpCircle className="w-4 h-4" />
         </button>
 
         {/* User Profile & Logout */}
         {user ? (
-          <div className="flex items-center gap-1.5 pl-1.5 border-l border-slate-200">
-            <div className="hidden sm:flex flex-col text-right">
-              <span className="text-[11px] font-bold text-slate-800 leading-tight">
+          <div className="flex items-center gap-1.5 pl-2 border-l border-slate-200 flex-shrink-0">
+            <div className="hidden lg:flex flex-col text-right whitespace-nowrap leading-none max-w-[120px]">
+              <span className="text-[11px] font-bold text-slate-800 truncate" title={user.displayName || user.name}>
                 {user.displayName || user.name}
               </span>
-              <span className="text-[9px] font-mono font-semibold text-sky-700 capitalize">
+              <span className="text-[9px] font-mono font-semibold text-sky-700 capitalize mt-0.5">
                 {user.role === 'doctor' ? 'Clinician' : 'Patient'}
               </span>
             </div>
             <button
               onClick={logout}
               title={`Sign out (${user.displayName || user.name})`}
-              className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 border border-slate-200 transition"
+              className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 border border-slate-200 transition flex-shrink-0 cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
             </button>
@@ -243,9 +247,9 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         ) : (
           <button
             onClick={() => openAuthModal('doctor')}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-semibold transition ml-1"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-semibold transition ml-1 flex-shrink-0 whitespace-nowrap cursor-pointer"
           >
-            <User className="w-3.5 h-3.5" />
+            <User className="w-3.5 h-3.5 flex-shrink-0" />
             <span>Sign In</span>
           </button>
         )}

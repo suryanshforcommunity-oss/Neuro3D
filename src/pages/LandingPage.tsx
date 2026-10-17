@@ -302,7 +302,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="p-3 bg-white/70 backdrop-blur-xs rounded-xl border border-slate-200/80 shadow-xs">
                 <div className="flex items-center gap-2 text-sky-700 font-semibold text-xs mb-1">
                   <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                  <span>100% Private & Secure</span>
+                  <span>Private & Secure</span>
                 </div>
                 <p className="text-[11px] text-slate-500">Scans stay on your device; opens directly in your browser.</p>
               </div>
@@ -664,7 +664,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="w-10 h-10 rounded-xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-600 mb-4">
                 <Lock className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 mb-2">100% Privacy & Auto-Cleanup</h3>
+              <h3 className="text-base font-bold text-slate-900 mb-2">Data Privacy & Auto-Cleanup</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Zero patient data leaks. Uploaded studies and intermediate analysis files are automatically purged after 24 hours by the automated background cleaner.
               </p>

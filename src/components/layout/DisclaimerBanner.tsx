@@ -16,7 +16,7 @@ export const DisclaimerBanner: React.FC = () => {
       <div className="flex items-center gap-3 text-[11px] text-amber-800/80 flex-shrink-0 font-mono">
         <span className="hidden md:inline-flex items-center gap-1">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-          100% Anonymous Patient Data
+          Anonymous Patient Data
         </span>
         <span className="hidden lg:inline text-amber-300">|</span>
         <span className="hidden lg:inline">
