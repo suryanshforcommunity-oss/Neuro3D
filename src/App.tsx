@@ -108,9 +108,9 @@ const AppContent: React.FC = () => {
       </div>
 
       {/* 3. Main Workspace Area: Sidebar + Active Page */}
-      <div className="flex-1 flex overflow-hidden print:overflow-visible print:h-auto print:block">
+      <div className="flex-1 flex overflow-hidden min-h-0 print:overflow-visible print:h-auto print:block">
         {/* Left Navigation Sidebar */}
-        <div className="no-print">
+        <div className="no-print h-full flex flex-col flex-shrink-0">
           <Sidebar
             activePage={state.activePage}
             onSelectPage={state.setActivePage}

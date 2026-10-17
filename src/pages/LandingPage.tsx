@@ -118,14 +118,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </div>
 
       {/* 1. SaaS Top Navigation Bar */}
-      <nav className="sticky top-0 z-40 bg-white/70 backdrop-blur-md border-b border-slate-200/60 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200/70 shadow-2xs">
+        <div className="max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4 lg:gap-8">
           {/* Logo & Brand */}
           <button
             onClick={() => {
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="flex items-center gap-3 text-left group cursor-pointer"
+            className="flex items-center gap-3 text-left group cursor-pointer flex-shrink-0"
             title="Return to top"
           >
             <div className="w-10 h-10 rounded-xl overflow-hidden shadow-sm border border-slate-200 bg-white flex-shrink-0 group-hover:scale-105 transition-transform p-0.5 flex items-center justify-center">
@@ -135,7 +135,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 className="w-full h-full object-contain"
               />
             </div>
-            <div>
+            <div className="whitespace-nowrap">
               <div className="flex items-center gap-2">
                 <span className="font-bold text-lg tracking-tight text-slate-900 group-hover:text-sky-600 transition-colors">NeuroScope</span>
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 border border-sky-200 font-mono">
@@ -146,20 +146,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
           </button>
 
-          {/* Nav links */}
-          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-            <a href="#features" className="hover:text-sky-600 transition">Features</a>
-            <a href="#showcase" className="hover:text-sky-600 transition">Interactive Demo</a>
-            <a href="#calculator" className="hover:text-sky-600 transition">Volume Calculator</a>
-            <a href="#workflow" className="hover:text-sky-600 transition">How It Works</a>
-            <a href="#faq" className="hover:text-sky-600 transition">FAQ</a>
+          {/* Nav links - evenly distributed in center */}
+          <div className="hidden lg:flex items-center justify-center gap-6 xl:gap-8 text-sm font-medium text-slate-600 flex-1 px-4 whitespace-nowrap">
+            <a href="#features" className="hover:text-sky-600 transition whitespace-nowrap">Features</a>
+            <a href="#showcase" className="hover:text-sky-600 transition whitespace-nowrap">Interactive Demo</a>
+            <a href="#calculator" className="hover:text-sky-600 transition whitespace-nowrap">Volume Calculator</a>
+            <a href="#workflow" className="hover:text-sky-600 transition whitespace-nowrap">How It Works</a>
+            <a href="#faq" className="hover:text-sky-600 transition whitespace-nowrap">FAQ</a>
           </div>
 
           {/* Right Action CTAs */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 xl:gap-2.5 flex-shrink-0 whitespace-nowrap">
             <button
               onClick={onLoadDemoCase}
-              className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition"
+              className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition whitespace-nowrap"
             >
               <Database className="w-3.5 h-3.5 text-slate-500" />
               <span>Load Sample</span>
@@ -168,18 +168,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {onOpenDoctorLogin && (
               <button
                 onClick={onOpenDoctorLogin}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-sky-800 bg-sky-50 hover:bg-sky-100 border border-sky-200 transition"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-sky-800 bg-sky-50 hover:bg-sky-100 border border-sky-200 transition whitespace-nowrap"
                 title="Sign in as Clinician / Doctor"
               >
                 <Stethoscope className="w-3.5 h-3.5 text-sky-600" />
-                <span className="hidden sm:inline">Clinician</span> Login
+                <span>Clinician Login</span>
               </button>
             )}
 
             {onOpenPatientLogin && (
               <button
                 onClick={onOpenPatientLogin}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition whitespace-nowrap"
                 title="Sign in to Patient Portal"
               >
                 <HeartPulse className="w-3.5 h-3.5 text-emerald-600" />
@@ -189,7 +189,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
             <button
               onClick={onLaunchWorkstation}
-              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 shadow-md shadow-sky-500/20 transition-all transform hover:-translate-y-0.5"
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 shadow-md shadow-sky-500/20 transition-all transform hover:-translate-y-0.5 whitespace-nowrap"
             >
               <span>3D Viewer</span>
               <ArrowRight className="w-3.5 h-3.5" />

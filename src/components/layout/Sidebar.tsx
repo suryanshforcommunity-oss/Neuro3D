@@ -76,12 +76,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onSelectPage }) =>
 
 
   return (
-    <aside className="w-64 bg-white/90 backdrop-blur-md border-r border-slate-200/80 flex flex-col justify-between select-none flex-shrink-0 z-20 shadow-xs">
-      {/* Brand header */}
-      <div>
+    <aside className="w-64 h-full bg-white/90 backdrop-blur-md border-r border-slate-200/80 flex flex-col justify-between select-none flex-shrink-0 z-20 shadow-xs overflow-hidden">
+      {/* Scrollable Upper Container: Brand header, Tagline, Navigation List */}
+      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
+        {/* Brand header */}
         <div
           onClick={() => onSelectPage('landing')}
-          className="p-4 border-b border-slate-200/80 flex items-center gap-3 cursor-pointer hover:bg-slate-50/80 transition-colors group"
+          className="p-4 border-b border-slate-200/80 flex items-center gap-3 cursor-pointer hover:bg-slate-50/80 transition-colors group flex-shrink-0"
           title="Return to Homepage"
         >
           <div className="w-10 h-10 rounded-xl overflow-hidden shadow-sm border border-slate-200 bg-white flex-shrink-0 group-hover:scale-105 transition-transform p-0.5 flex items-center justify-center">
@@ -105,12 +106,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onSelectPage }) =>
         </div>
 
         {/* Tagline callout */}
-        <div className="mx-3 mt-3 px-3 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-[11px] text-slate-700 italic font-medium leading-relaxed">
+        <div className="mx-3 mt-3 px-3 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-[11px] text-slate-700 italic font-medium leading-relaxed flex-shrink-0">
           “See a brain tumour in 3D, measure it, and know how far to trust it.”
         </div>
 
         {/* Navigation list */}
-        <nav className="p-2 space-y-1 mt-2">
+        <nav className="p-2 space-y-1 mt-2 flex-1">
           {navItems.map(item => {
             const Icon = item.icon;
             const isActive = activePage === item.id;
@@ -139,50 +140,53 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onSelectPage }) =>
         </nav>
       </div>
 
-      {/* Active User Session */}
-      <div className="px-3 py-2 border-t border-slate-200/80 bg-slate-50/60">
-        {user ? (
-          <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-200 shadow-2xs">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-7 h-7 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center flex-shrink-0">
-                {user.role === 'doctor' ? <Stethoscope className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
+      {/* Pinned Bottom Container: Active User Session + Footer / System status */}
+      <div className="flex-shrink-0">
+        {/* Active User Session */}
+        <div className="px-3 py-2 border-t border-slate-200/80 bg-slate-50/60">
+          {user ? (
+            <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-200 shadow-2xs">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-7 h-7 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center flex-shrink-0">
+                  {user.role === 'doctor' ? <Stethoscope className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
+                </div>
+                <div className="truncate">
+                  <p className="text-xs font-bold text-slate-800 truncate leading-tight">{user.displayName || user.name}</p>
+                  <p className="text-[10px] text-slate-500 font-mono capitalize">{user.role}</p>
+                </div>
               </div>
-              <div className="truncate">
-                <p className="text-xs font-bold text-slate-800 truncate leading-tight">{user.displayName || user.name}</p>
-                <p className="text-[10px] text-slate-500 font-mono capitalize">{user.role}</p>
-              </div>
+              <button
+                onClick={logout}
+                title="Sign out"
+                className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
             </div>
+          ) : (
             <button
-              onClick={logout}
-              title="Sign out"
-              className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+              onClick={() => openAuthModal('doctor')}
+              className="w-full flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl bg-white hover:bg-sky-50 text-sky-700 border border-sky-200 text-xs font-semibold transition shadow-2xs"
             >
-              <LogOut className="w-3.5 h-3.5" />
+              <UserCheck className="w-3.5 h-3.5" />
+              <span>Sign In / Change Role</span>
             </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => openAuthModal('doctor')}
-            className="w-full flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl bg-white hover:bg-sky-50 text-sky-700 border border-sky-200 text-xs font-semibold transition shadow-2xs"
-          >
-            <UserCheck className="w-3.5 h-3.5" />
-            <span>Sign In / Change Role</span>
-          </button>
-        )}
-      </div>
+          )}
+        </div>
 
-      {/* Footer / System status */}
-      <div className="p-3.5 border-t border-slate-200 bg-slate-50 text-xs text-slate-700 space-y-2">
-        <div className="flex justify-between items-center text-[10px]">
-          <span className="text-slate-600 font-bold uppercase tracking-wider">Environment</span>
-          <span className="text-emerald-800 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 font-mono">STAGE 2 VERIFIED</span>
-        </div>
-        <div className="flex justify-between items-center text-[10px]">
-          <span className="text-slate-600 font-bold uppercase tracking-wider">Convention</span>
-          <span className="text-sky-800 font-bold font-mono">RADIOLOGICAL (L/R)</span>
-        </div>
-        <div className="pt-2 text-[10px] text-slate-600 font-medium border-t border-slate-200 leading-tight">
-          BraTS Standard Nested Labels (NCR=1, ED=2, ET=4)
+        {/* Footer / System status */}
+        <div className="p-3.5 border-t border-slate-200 bg-slate-50 text-xs text-slate-700 space-y-2">
+          <div className="flex justify-between items-center text-[10px]">
+            <span className="text-slate-600 font-bold uppercase tracking-wider">Environment</span>
+            <span className="text-emerald-800 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 font-mono">STAGE 2 VERIFIED</span>
+          </div>
+          <div className="flex justify-between items-center text-[10px]">
+            <span className="text-slate-600 font-bold uppercase tracking-wider">Convention</span>
+            <span className="text-sky-800 font-bold font-mono">RADIOLOGICAL (L/R)</span>
+          </div>
+          <div className="pt-2 text-[10px] text-slate-600 font-medium border-t border-slate-200 leading-tight">
+            BraTS Standard Nested Labels (NCR=1, ED=2, ET=4)
+          </div>
         </div>
       </div>
     </aside>
