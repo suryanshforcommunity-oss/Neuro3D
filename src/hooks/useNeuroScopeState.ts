@@ -18,7 +18,15 @@ import {
 import { voxelToWorld, clampVoxel, DEFAULT_IDENTITY_AFFINE } from '../utils/coordinates';
 import { computeBraTSCompositeCounts } from '../utils/volume';
 import { validateNiftiFile } from '../utils/niftiValidation';
-import { getOrCreateDemoVolume, DEMO_PROVENANCE, DEMO_MODEL_RELIABILITY } from '../data/demoData';
+import {
+  getOrCreateDemoVolume,
+  DEMO_PROVENANCE,
+  DEMO_MODEL_RELIABILITY,
+  DEMO_PATIENTS,
+  DemoExaminationSlot,
+  DemoExecutionReceipt,
+  getDemoProvenanceForSlot,
+} from '../data/demoData';
 import { apiClient } from '../services/api';
 
 export type NavigationPage = 'landing' | 'workspace' | 'segmentation' | 'evaluation' | 'reports' | 'modelInfo' | 'settings' | 'pipeline';
@@ -27,6 +35,12 @@ export function useNeuroScopeState() {
   const [activePage, setActivePage] = useState<NavigationPage>('landing');
   const [isDemoMode, setIsDemoMode] = useState<boolean>(true); // Initialized with demo for instant workstation test
   const [activeSequence, setActiveSequence] = useState<MriSequenceType>('T1Gd');
+
+  // Multi-patient demonstration examination state
+  const [isDemoSelectorOpen, setIsDemoSelectorOpen] = useState<boolean>(false);
+  const [activeDemoSlot, setActiveDemoSlot] = useState<DemoExaminationSlot>(DEMO_PATIENTS[0].examinations[0]);
+  const [evaluatedDemoSlots, setEvaluatedDemoSlots] = useState<string[]>(['A1']);
+  const [executionReceipt, setExecutionReceipt] = useState<DemoExecutionReceipt | null>(null);
 
   // Backend connection state
   const [backendStatus, setBackendStatus] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
@@ -139,9 +153,41 @@ export function useNeuroScopeState() {
     setClippingPlanes({ axial: 0, coronal: 0, sagittal: 0, enabled: false });
   }, [dimensions]);
 
-  // Load demo research case
-  const loadDemoCase = useCallback(() => {
-    const demo = getOrCreateDemoVolume();
+  // Load a specific demonstration examination slot (with live inference or precomputed results)
+  const loadDemoSlot = useCallback(async (slot: DemoExaminationSlot, executeLive: boolean = false) => {
+    let receipt: DemoExecutionReceipt | null = null;
+    let liveMetrics: any = null;
+
+    if (executeLive && backendStatus === 'connected') {
+      try {
+        setIsProcessing(true);
+        const res = await fetch(`${backendUrl}/api/v1/demos/${slot.studyId}/infer`, {
+          method: 'POST',
+        });
+        if (res.ok) {
+          const data = await res.json();
+          receipt = {
+            device: data.execution.device,
+            deviceName: data.execution.deviceName,
+            loadDurationMs: data.execution.loadDurationMs,
+            preprocessingDurationMs: data.execution.preprocessingDurationMs,
+            inferenceDurationMs: data.execution.inferenceDurationMs,
+            postprocessingDurationMs: data.execution.postprocessingDurationMs,
+            totalDurationMs: data.execution.totalDurationMs,
+            timestamp: data.execution.timestamp,
+            isLiveInference: true,
+          };
+          liveMetrics = data.evaluationMetrics;
+          setExecutionReceipt(receipt);
+        }
+      } catch (err) {
+        console.warn('Live inference call failed, using verified procedural synthesis', err);
+      } finally {
+        setIsProcessing(false);
+      }
+    }
+
+    const demo = getOrCreateDemoVolume(slot.studyId);
     setDimensions(demo.dimensions);
     setSpacing(demo.spacing);
     setAffine(demo.affine);
@@ -151,8 +197,22 @@ export function useNeuroScopeState() {
     setLabelCounts(demo.labelCounts);
     setExpertCounts(demo.expertLabelCounts);
     setIsDemoMode(true);
-    setProvenance(DEMO_PROVENANCE);
-    setModelReliability(DEMO_MODEL_RELIABILITY);
+    setActiveDemoSlot(slot);
+
+    // Track unique demonstration cases evaluated (honest evaluation progress tracking)
+    setEvaluatedDemoSlots(prev => prev.includes(slot.slotId) ? prev : [...prev, slot.slotId]);
+
+    const prov = getDemoProvenanceForSlot(slot, receipt, liveMetrics);
+    setProvenance(prov);
+
+    setModelReliability(prev => ({
+      ...prev,
+      backendConnected: backendStatus === 'connected',
+      inferenceAvailable: receipt?.isLiveInference || prev.inferenceAvailable,
+      statusMessage: receipt?.isLiveInference
+        ? `Live inference executed in ${receipt.totalDurationMs} ms on ${receipt.deviceName}.`
+        : 'Precomputed demonstration result — live inference was not executed.',
+    }));
 
     setCrosshairState({
       i: Math.floor(demo.dimensions.dimX / 2) + 18,
@@ -161,13 +221,18 @@ export function useNeuroScopeState() {
     });
 
     setUploadedSequences([
-      { sequenceType: 'T1', file: null, filename: 'BraTS2023_00042_t1.nii.gz', fileSize: 4125890, isValid: true, isLoaded: true },
-      { sequenceType: 'T1Gd', file: null, filename: 'BraTS2023_00042_t1ce.nii.gz', fileSize: 4210450, isValid: true, isLoaded: true },
-      { sequenceType: 'T2', file: null, filename: 'BraTS2023_00042_t2.nii.gz', fileSize: 4180210, isValid: true, isLoaded: true },
-      { sequenceType: 'FLAIR', file: null, filename: 'BraTS2023_00042_flair.nii.gz', fileSize: 4195120, isValid: true, isLoaded: true },
-      { sequenceType: 'EXPERT_MASK', file: null, filename: 'BraTS2023_00042_seg_expert.nii.gz', fileSize: 845200, isValid: true, isLoaded: true },
+      { sequenceType: 'T1', file: null, filename: `${slot.studyId}_t1.nii.gz`, fileSize: 4125890, isValid: true, isLoaded: true },
+      { sequenceType: 'T1Gd', file: null, filename: `${slot.studyId}_t1ce.nii.gz`, fileSize: 4210450, isValid: true, isLoaded: true },
+      { sequenceType: 'T2', file: null, filename: `${slot.studyId}_t2.nii.gz`, fileSize: 4180210, isValid: true, isLoaded: true },
+      { sequenceType: 'FLAIR', file: null, filename: `${slot.studyId}_flair.nii.gz`, fileSize: 4195120, isValid: true, isLoaded: true },
+      { sequenceType: 'EXPERT_MASK', file: null, filename: `${slot.studyId}_expert_mask.nii.gz`, fileSize: 845200, isValid: true, isLoaded: true },
     ]);
-  }, []);
+  }, [backendStatus, backendUrl]);
+
+  // Load default demo research case (Slot A1)
+  const loadDemoCase = useCallback(() => {
+    loadDemoSlot(DEMO_PATIENTS[0].examinations[0], false);
+  }, [loadDemoSlot]);
 
   // Unload current case
   const unloadCase = useCallback(() => {
@@ -390,6 +455,14 @@ export function useNeuroScopeState() {
     setIsUploadModalOpen,
     isHelpModalOpen,
     setIsHelpModalOpen,
+
+    // Multi-Patient Demo System
+    isDemoSelectorOpen,
+    setIsDemoSelectorOpen,
+    activeDemoSlot,
+    evaluatedDemoSlots,
+    executionReceipt,
+    loadDemoSlot,
 
     loadDemoCase,
     unloadCase,

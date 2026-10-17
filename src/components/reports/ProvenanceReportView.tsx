@@ -13,8 +13,12 @@ import {
   Activity,
   Cpu,
   UserCheck,
+  TrendingUp,
+  TrendingDown,
+  ArrowRight,
 } from 'lucide-react';
 import { StudyProvenance, ModelReliabilityInfo } from '../../types';
+import { DEMO_PATIENTS } from '../../data/demoData';
 
 interface ProvenanceReportViewProps {
   provenance: StudyProvenance | null;
@@ -47,6 +51,35 @@ export const ProvenanceReportView: React.FC<ProvenanceReportViewProps> = ({
     const etMl = provenance.volumes.etMl;
     const edMl = Math.max(0, wtMl - tcMl);
     const ncrMl = Math.max(0, tcMl - etMl);
+
+    const activeDemoPatient = DEMO_PATIENTS.find(
+      p => p.patientId === provenance.patientDeidentifiedId || provenance.studyId.includes(p.patientId)
+    ) || (provenance.isDemoData ? DEMO_PATIENTS[0] : null);
+
+    const longitudinalRowsHtml = activeDemoPatient
+      ? activeDemoPatient.examinations.map((exam, idx) => {
+          const prev = idx > 0 ? activeDemoPatient.examinations[idx - 1] : null;
+          const diff = prev ? (exam.volumes.wtVolumeMl - prev.volumes.wtVolumeMl).toFixed(2) : 'Baseline';
+          const pct = prev && prev.volumes.wtVolumeMl > 0
+            ? `${(((exam.volumes.wtVolumeMl - prev.volumes.wtVolumeMl) / prev.volumes.wtVolumeMl) * 100).toFixed(1)}%`
+            : '—';
+          const status = idx === 0
+            ? 'Baseline Reference'
+            : (exam.volumes.wtVolumeMl > (prev?.volumes.wtVolumeMl || 0)
+              ? 'Increase in measured volume'
+              : 'Decrease in measured volume');
+          return `<tr>
+            <td><strong>Slot ${exam.slotId}</strong></td>
+            <td>${exam.displayDate}</td>
+            <td><strong>${exam.volumes.wtVolumeMl.toFixed(2)} mL</strong></td>
+            <td>${exam.volumes.tcVolumeMl.toFixed(2)} mL</td>
+            <td>${exam.volumes.etVolumeMl.toFixed(2)} mL</td>
+            <td>${idx > 0 && Number(diff) > 0 ? '+' : ''}${diff} ${idx > 0 ? 'mL' : ''}</td>
+            <td>${idx > 0 && !pct.startsWith('-') ? '+' : ''}${pct}</td>
+            <td>${status}</td>
+          </tr>`;
+        }).join('')
+      : '';
 
     const htmlContent = `<!DOCTYPE html>
 <html lang="en">
@@ -267,11 +300,32 @@ export const ProvenanceReportView: React.FC<ProvenanceReportViewProps> = ({
       </tr>
     </tbody>
   </table>
-  <div style="font-size: 10px; color: #64748b; font-family: monospace; margin-top: -12px; margin-bottom: 20px;">
-    * Physical Volume Formula: Volume (mL) = Voxel Count × (dx × dy × dz in mm) ÷ 1,000. Native Spacing: ${provenance.volumes.spacing}.
+  ${activeDemoPatient ? `
+  <div class="section-title">2. Longitudinal Multi-Examination Series (${activeDemoPatient.name} • ${activeDemoPatient.patientId})</div>
+  <div style="padding: 8px 12px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; margin-bottom: 12px;">
+    <strong>Demonstration Progression Series:</strong> ${activeDemoPatient.trendDescription}<br>
+    <span style="color: #64748b; font-style: italic;">Neutral Clinical Terminology: Controlled demonstration trajectory for software validation and protocol demonstration. Does NOT represent real clinical prognosis, cancer staging, treatment response, or medical diagnosis.</span>
   </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Exam Slot</th>
+        <th>Date</th>
+        <th>Whole Tumor (WT)</th>
+        <th>Tumor Core (TC)</th>
+        <th>Enhancing (ET)</th>
+        <th>Abs. Change (ΔV)</th>
+        <th>% Change</th>
+        <th>Trajectory Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${longitudinalRowsHtml}
+    </tbody>
+  </table>
+  ` : ''}
 
-  <div class="section-title">2. Input MRI Scans & Cryptographic SHA-256 Fingerprints</div>
+  <div class="section-title">${activeDemoPatient ? '3' : '2'}. Input MRI Scans & Cryptographic SHA-256 Fingerprints</div>
   <table>
     <thead>
       <tr>
@@ -343,6 +397,10 @@ export const ProvenanceReportView: React.FC<ProvenanceReportViewProps> = ({
   const etMl = provenance.volumes.etMl;
   const edMl = Math.max(0, wtMl - tcMl);
   const ncrMl = Math.max(0, tcMl - etMl);
+
+  const activeDemoPatient = DEMO_PATIENTS.find(
+    p => p.patientId === provenance.patientDeidentifiedId || provenance.studyId.includes(p.patientId)
+  ) || (provenance.isDemoData ? DEMO_PATIENTS[0] : null);
 
   return (
     <div className="max-w-5xl mx-auto p-4 sm:p-6 space-y-6 select-text print:p-0 print:m-0 print:max-w-none print:w-full">
@@ -558,12 +616,115 @@ export const ProvenanceReportView: React.FC<ProvenanceReportViewProps> = ({
           </div>
         </div>
 
-        {/* 2. Cryptographic Sequence Hash Verification Table */}
+        {/* Longitudinal Multi-Examination Progression (3-Examination Series) */}
+        {activeDemoPatient && (
+          <div className="avoid-break space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
+              <h3 className="text-xs font-bold uppercase tracking-wider font-mono text-slate-950 flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-sky-600" />
+                <span>2. Longitudinal Multi-Examination Series ({activeDemoPatient.name} • {activeDemoPatient.patientId})</span>
+              </h3>
+              <span className="text-[11px] font-mono font-bold text-sky-700 bg-sky-50 px-2.5 py-0.5 rounded border border-sky-200">
+                {activeDemoPatient.expectedTrend === 'increasing' ? 'Increasing Volume Series' : 'Decreasing Volume Series'}
+              </span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+              <p className="font-semibold text-slate-800">
+                Controlled Demonstration Trajectory: {activeDemoPatient.trendDescription}
+              </p>
+              <p className="text-[11px] text-slate-500 italic">
+                Notice: Neutral terminology applied. Scan comparability, segmentation consistency, and multidisciplinary clinical review are essential before making medical inferences.
+              </p>
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-slate-300 shadow-2xs">
+              <table className="w-full text-left text-xs font-mono">
+                <thead className="bg-slate-100 text-slate-800 text-xs font-bold border-b border-slate-300 uppercase">
+                  <tr>
+                    <th className="p-3">Examination Slot</th>
+                    <th className="p-3">Exam Date</th>
+                    <th className="p-3">Whole Tumor (WT)</th>
+                    <th className="p-3">Tumor Core (TC)</th>
+                    <th className="p-3">Enhancing (ET)</th>
+                    <th className="p-3">Abs. Difference (ΔV)</th>
+                    <th className="p-3">% Difference</th>
+                    <th className="p-3">Measured Trajectory Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 bg-white">
+                  {activeDemoPatient.examinations.map((exam, idx) => {
+                    const prevExam = idx > 0 ? activeDemoPatient.examinations[idx - 1] : null;
+                    const diffMl = prevExam ? exam.volumes.wtVolumeMl - prevExam.volumes.wtVolumeMl : 0;
+                    const pctChange = prevExam && prevExam.volumes.wtVolumeMl > 0
+                      ? ((diffMl / prevExam.volumes.wtVolumeMl) * 100)
+                      : null;
+                    const isCurrent = provenance.studyId === exam.studyId;
+
+                    return (
+                      <tr key={exam.slotId} className={isCurrent ? 'bg-sky-50/70 font-semibold' : 'hover:bg-slate-50'}>
+                        <td className="p-3 font-bold text-sky-900 flex items-center gap-1.5">
+                          <span className="px-2 py-0.5 rounded bg-sky-100 text-sky-800 text-[11px] font-mono">
+                            Slot {exam.slotId}
+                          </span>
+                          {isCurrent && <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">CURRENT</span>}
+                        </td>
+                        <td className="p-3 text-slate-700">{exam.displayDate}</td>
+                        <td className="p-3 font-bold text-slate-950">{exam.volumes.wtVolumeMl.toFixed(2)} mL</td>
+                        <td className="p-3 text-slate-700">{exam.volumes.tcVolumeMl.toFixed(2)} mL</td>
+                        <td className="p-3 text-slate-700">{exam.volumes.etVolumeMl.toFixed(2)} mL</td>
+                        <td className="p-3 font-mono">
+                          {idx === 0 ? (
+                            <span className="text-slate-400">Baseline</span>
+                          ) : (
+                            <span className={diffMl > 0 ? 'text-amber-700 font-bold' : 'text-emerald-700 font-bold'}>
+                              {diffMl > 0 ? `+${diffMl.toFixed(2)} mL` : `${diffMl.toFixed(2)} mL`}
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-3 font-mono">
+                          {idx === 0 ? (
+                            <span className="text-slate-400">—</span>
+                          ) : pctChange !== null ? (
+                            <span className={pctChange > 0 ? 'text-amber-700 font-bold' : 'text-emerald-700 font-bold'}>
+                              {pctChange > 0 ? `+${pctChange.toFixed(1)}%` : `${pctChange.toFixed(1)}%`}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">N/A</span>
+                          )}
+                        </td>
+                        <td className="p-3">
+                          {idx === 0 ? (
+                            <span className="text-slate-600">Baseline Reference</span>
+                          ) : diffMl > 0 ? (
+                            <span className="inline-flex items-center gap-1 text-amber-700 font-semibold">
+                              <TrendingUp className="w-3.5 h-3.5" />
+                              Increase in measured volume
+                            </span>
+                          ) : diffMl < 0 ? (
+                            <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold">
+                              <TrendingDown className="w-3.5 h-3.5" />
+                              Decrease in measured volume
+                            </span>
+                          ) : (
+                            <span className="text-slate-600">No measurable change</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Cryptographic Sequence Hash Verification Table */}
         <div className="avoid-break space-y-2.5">
           <div className="border-b border-slate-200 pb-1.5 flex items-center justify-between">
             <h3 className="text-xs font-bold uppercase tracking-wider font-mono text-slate-950 flex items-center gap-1.5">
               <Hash className="w-4 h-4 text-sky-600" />
-              <span>2. Multi-Sequence Input Scans & Digital SHA-256 Hashes</span>
+              <span>{activeDemoPatient ? '3' : '2'}. Multi-Sequence Input Scans & Digital SHA-256 Hashes</span>
             </h3>
             <span className="text-[11px] font-mono text-slate-500 font-medium">DICOM/NIfTI Chain of Custody</span>
           </div>

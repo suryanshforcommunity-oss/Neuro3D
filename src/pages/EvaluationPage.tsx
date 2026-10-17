@@ -2,6 +2,8 @@ import React from 'react';
 import { BarChart3, AlertCircle, CheckCircle2, ShieldAlert, UploadCloud, Target } from 'lucide-react';
 import { EvaluationMetrics, TumourLabelCounts, VoxelSpacing } from '../types';
 import { buildRegionVolumeSummaries } from '../utils/volume';
+import { DemoEvaluationProgressCard } from '../components/reliability/DemoEvaluationProgressCard';
+import { DemoExecutionReceipt } from '../data/demoData';
 
 interface EvaluationPageProps {
   metrics?: EvaluationMetrics;
@@ -10,6 +12,10 @@ interface EvaluationPageProps {
   spacing: VoxelSpacing;
   onOpenUpload: () => void;
   isDemoMode: boolean;
+  evaluatedDemoSlots?: string[];
+  executionReceipt?: DemoExecutionReceipt | null;
+  onOpenDemoSelector?: () => void;
+  studyId?: string;
 }
 
 export const EvaluationPage: React.FC<EvaluationPageProps> = ({
@@ -19,6 +25,10 @@ export const EvaluationPage: React.FC<EvaluationPageProps> = ({
   spacing,
   onOpenUpload,
   isDemoMode,
+  evaluatedDemoSlots,
+  executionReceipt,
+  onOpenDemoSelector,
+  studyId,
 }) => {
   const hasExpert = Boolean(metrics && metrics.hasExpertMask);
   const volumeSummaries = buildRegionVolumeSummaries(labelCounts, spacing, expertCounts);
@@ -44,6 +54,15 @@ export const EvaluationPage: React.FC<EvaluationPageProps> = ({
           </div>
         )}
       </div>
+
+      {/* Demo Evaluation Progress & Runtime Efficiency Card */}
+      <DemoEvaluationProgressCard
+        evaluatedSlots={evaluatedDemoSlots}
+        executionReceipt={executionReceipt}
+        metrics={metrics}
+        onOpenDemoSelector={onOpenDemoSelector}
+        studyId={studyId}
+      />
 
       {!hasExpert ? (
         /* Empty State / No Expert Mask */

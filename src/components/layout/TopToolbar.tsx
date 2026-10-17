@@ -28,6 +28,9 @@ interface TopToolbarProps {
   onOpenUpload: () => void;
   onOpenHelp: () => void;
   onLoadDemo: () => void;
+  onOpenDemoSelector?: () => void;
+  activeSlotId?: string;
+  patientName?: string;
   onGoHome?: () => void;
   activeSequence: MriSequenceType;
   onSelectSequence: (seq: MriSequenceType) => void;
@@ -45,6 +48,9 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   onOpenUpload,
   onOpenHelp,
   onLoadDemo,
+  onOpenDemoSelector,
+  activeSlotId,
+  patientName,
   onGoHome,
   activeSequence,
   onSelectSequence,
@@ -83,13 +89,16 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           </button>
         )}
 
-        <div className="flex items-center gap-1.5 flex-shrink-0">
+        <div
+          onClick={isDemoMode && onOpenDemoSelector ? onOpenDemoSelector : undefined}
+          className={`flex items-center gap-1.5 flex-shrink-0 ${isDemoMode && onOpenDemoSelector ? 'cursor-pointer group' : ''}`}
+          title={isDemoMode ? "Click to open Multi-Patient Demo Selector" : studyId}
+        >
           <span className="text-slate-700 text-xs font-mono font-bold">CASE:</span>
           <span
-            title={studyId}
-            className="font-mono text-xs font-bold text-sky-900 bg-sky-100/90 px-2 py-0.5 rounded-md border border-sky-300 max-w-[130px] sm:max-w-[170px] truncate whitespace-nowrap"
+            className="font-mono text-xs font-bold text-sky-900 bg-sky-100/90 group-hover:bg-sky-200/90 px-2 py-0.5 rounded-md border border-sky-300 max-w-[130px] sm:max-w-[180px] truncate whitespace-nowrap transition"
           >
-            {studyId}
+            {activeSlotId ? `Scan ${activeSlotId} • ${patientName ? patientName.split(' ')[0] : studyId}` : studyId}
           </span>
         </div>
 
@@ -97,7 +106,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         {isDemoMode ? (
           <Badge variant="amber" size="sm" className="hidden lg:inline-flex flex-shrink-0 whitespace-nowrap">
             <Database className="w-3 h-3 text-amber-600" />
-            SAMPLE DEMO
+            MULTI-PATIENT DEMO
           </Badge>
         ) : (
           <Badge variant="cyan" size="sm" className="hidden lg:inline-flex flex-shrink-0 whitespace-nowrap">
@@ -175,15 +184,15 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           </span>
         </div>
 
-        {/* Demo Case Loader */}
+        {/* Multi-Patient Demo Selector Button */}
         <button
-          onClick={onLoadDemo}
-          title="Load sample 3D brain tumor demo case"
-          className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold transition whitespace-nowrap flex-shrink-0 cursor-pointer"
+          onClick={onOpenDemoSelector || onLoadDemo}
+          title="Open Multi-Patient MRI Demonstration System (Select Aarav Sharma or Priya Patel, 6 examinations, volume progression/regression)"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold transition whitespace-nowrap flex-shrink-0 cursor-pointer shadow-2xs"
         >
           <Sparkles className="w-3.5 h-3.5 text-indigo-600 flex-shrink-0" />
-          <span className="hidden xl:inline">Load Sample Demo</span>
-          <span className="xl:hidden">Sample</span>
+          <span className="hidden xl:inline">Demo System ({activeSlotId || 'A1'})</span>
+          <span className="xl:hidden">Demos ({activeSlotId || 'A1'})</span>
         </button>
 
         {/* Upload Button */}

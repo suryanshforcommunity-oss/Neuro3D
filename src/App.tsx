@@ -16,6 +16,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthModal } from './components/auth/AuthModal';
 import { PatientPortalPage } from './pages/PatientPortalPage';
 import { LoginPage } from './pages/LoginPage';
+import { MultiPatientDemoSelectorModal } from './components/demo/MultiPatientDemoSelectorModal';
 import { PipelineArchitecturePage } from './pages/PipelineArchitecturePage';
 
 const AppContent: React.FC = () => {
@@ -104,6 +105,9 @@ const AppContent: React.FC = () => {
           onSelectSequence={state.setActiveSequence}
           crosshair={state.crosshair}
           worldCoordinate={state.worldCoordinate}
+          onOpenDemoSelector={() => state.setIsDemoSelectorOpen(true)}
+          activeSlotId={state.activeDemoSlot?.slotId}
+          patientName={state.activeDemoSlot?.patientName}
         />
       </div>
 
@@ -173,6 +177,10 @@ const AppContent: React.FC = () => {
               spacing={state.spacing}
               onOpenUpload={() => state.setIsUploadModalOpen(true)}
               isDemoMode={state.isDemoMode}
+              evaluatedDemoSlots={state.evaluatedDemoSlots}
+              executionReceipt={state.executionReceipt}
+              onOpenDemoSelector={() => state.setIsDemoSelectorOpen(true)}
+              studyId={state.provenance?.studyId}
             />
           )}
 
@@ -227,6 +235,15 @@ const AppContent: React.FC = () => {
       <HelpGuideModal
         isOpen={state.isHelpModalOpen}
         onClose={() => state.setIsHelpModalOpen(false)}
+      />
+
+      <MultiPatientDemoSelectorModal
+        isOpen={state.isDemoSelectorOpen}
+        onClose={() => state.setIsDemoSelectorOpen(false)}
+        activeSlotId={state.activeDemoSlot?.slotId}
+        onSelectSlot={state.loadDemoSlot}
+        backendConnected={state.backendStatus === 'connected'}
+        backendUrl={state.backendUrl}
       />
 
       <AuthModal />

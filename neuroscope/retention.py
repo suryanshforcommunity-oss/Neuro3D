@@ -31,6 +31,10 @@ def cleanup_expired_studies(
             continue
 
         try:
+            # Protect permanent demonstration examinations from transient session cleanup
+            if study_folder.name.startswith("study_exam_"):
+                continue
+
             mtime = study_folder.stat().st_mtime
             age = now - mtime
 

@@ -7,7 +7,7 @@ longitudinal trend comparisons, and anatomical localization timelines.
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
-# Longitudinal examination database for patients
+# Longitudinal clinical examination database for patients (Clinical Portal Records)
 PATIENT_EXAMINATIONS: Dict[str, List[Dict[str, Any]]] = {
     "pat_001": [
         {
@@ -139,6 +139,226 @@ PATIENT_EXAMINATIONS: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
+# Dedicated Multi-Patient Demonstration Examination Series (Doctor Workstation)
+# Patient A: Monotonically INCREASING measured volume: A1 (15.03) < A2 (24.34) < A3 (35.51) mL
+# Patient B: Monotonically DECREASING measured volume: B1 (24.34) > B2 (15.03) > B3 (9.95) mL
+PATIENT_DEMO_EXAMINATIONS: Dict[str, List[Dict[str, Any]]] = {
+    "pat_001": [
+        {
+            "demoSlot": "A1",
+            "studyId": "study_exam_01",
+            "patientId": "PAT-2026-0042",
+            "patientName": "Aarav Sharma",
+            "examinationDate": "2025-10-14T09:30:00Z",
+            "displayDate": "Oct 14, 2025",
+            "facility": "Memorial Neurological Institute",
+            "sequences": ["T1", "T1Gd", "T2", "FLAIR"],
+            "magneticField": "3.0T MRI",
+            "segmentationStatus": "Completed (Precomputed / Live Supported)",
+            "hasSegmentation": True,
+            "hasExpertMask": True,
+            "isLiveInference": False,
+            "provenanceLabel": "Synthetic Multimodal Brain Phantom (1.0 mm isotropic)",
+            "voxelSpacingMm": [1.0, 1.0, 1.0],
+            "volumes": {
+                "wtVolumeMl": 15.03,
+                "tcVolumeMl": 6.39,
+                "etVolumeMl": 3.84,
+                "edVolumeMl": 8.64,
+                "ncrVolumeMl": 2.55,
+            },
+            "tumorLocation": {
+                "lobe": "Right Frontoparietal Region",
+                "subregion": "Subcortical White Matter adjacent to Precentral Gyrus",
+                "hemisphere": "Right",
+                "coordinates": {"x": 18.0, "y": 6.0, "z": 4.0},
+                "anteriorPosterior": "Mid-Posterior",
+                "notes": "Examination A1: Baseline examination. Discrete localized enhancing rim.",
+            },
+            "reportAvailable": True,
+            "reportId": "DEMO_REP_A1_0042",
+            "clinicalSummary": "Baseline demonstration scan. Measured Whole Tumor (WT) volume is 15.03 mL.",
+        },
+        {
+            "demoSlot": "A2",
+            "studyId": "study_exam_02",
+            "patientId": "PAT-2026-0042",
+            "patientName": "Aarav Sharma",
+            "examinationDate": "2026-01-18T11:15:00Z",
+            "displayDate": "Jan 18, 2026",
+            "facility": "Memorial Neurological Institute",
+            "sequences": ["T1", "T1Gd", "T2", "FLAIR"],
+            "magneticField": "3.0T MRI",
+            "segmentationStatus": "Completed (Precomputed / Live Supported)",
+            "hasSegmentation": True,
+            "hasExpertMask": True,
+            "isLiveInference": False,
+            "provenanceLabel": "Synthetic Multimodal Brain Phantom (1.0 mm isotropic)",
+            "voxelSpacingMm": [1.0, 1.0, 1.0],
+            "volumes": {
+                "wtVolumeMl": 24.34,
+                "tcVolumeMl": 11.10,
+                "etVolumeMl": 6.48,
+                "edVolumeMl": 13.24,
+                "ncrVolumeMl": 4.62,
+            },
+            "tumorLocation": {
+                "lobe": "Right Frontoparietal Region",
+                "subregion": "Deep Periventricular White Matter margin",
+                "hemisphere": "Right",
+                "coordinates": {"x": 18.0, "y": 6.0, "z": 4.0},
+                "anteriorPosterior": "Mid-Posterior",
+                "notes": "Examination A2: Mid follow-up scan demonstrating increased measured segmented volume.",
+            },
+            "reportAvailable": True,
+            "reportId": "DEMO_REP_A2_0042",
+            "clinicalSummary": "Follow-up scan A2. Measured Whole Tumor (WT) volume is 24.34 mL (Increase of +9.31 mL).",
+        },
+        {
+            "demoSlot": "A3",
+            "studyId": "study_exam_03",
+            "patientId": "PAT-2026-0042",
+            "patientName": "Aarav Sharma",
+            "examinationDate": "2026-04-22T14:00:00Z",
+            "displayDate": "Apr 22, 2026",
+            "facility": "Memorial Neurological Institute",
+            "sequences": ["T1", "T1Gd", "T2", "FLAIR"],
+            "magneticField": "3.0T MRI",
+            "segmentationStatus": "Completed (Precomputed / Live Supported)",
+            "hasSegmentation": True,
+            "hasExpertMask": True,
+            "isLiveInference": False,
+            "provenanceLabel": "Synthetic Multimodal Brain Phantom (1.0 mm isotropic)",
+            "voxelSpacingMm": [1.0, 1.0, 1.0],
+            "volumes": {
+                "wtVolumeMl": 35.51,
+                "tcVolumeMl": 16.64,
+                "etVolumeMl": 9.51,
+                "edVolumeMl": 18.87,
+                "ncrVolumeMl": 7.13,
+            },
+            "tumorLocation": {
+                "lobe": "Right Frontoparietal Region",
+                "subregion": "Extended frontoparietal margins with perilesional edema",
+                "hemisphere": "Right",
+                "coordinates": {"x": 18.0, "y": 6.0, "z": 4.0},
+                "anteriorPosterior": "Posterior aspect",
+                "notes": "Examination A3: Latest scan. Measured segmented volume is 35.51 mL.",
+            },
+            "reportAvailable": True,
+            "reportId": "DEMO_REP_A3_0042",
+            "clinicalSummary": "Follow-up scan A3. Measured Whole Tumor (WT) volume is 35.51 mL (Increase of +11.17 mL).",
+        },
+    ],
+    "pat_002": [
+        {
+            "demoSlot": "B1",
+            "studyId": "study_exam_02",
+            "patientId": "PAT-2026-0108",
+            "patientName": "Priya Patel",
+            "examinationDate": "2025-11-10T10:00:00Z",
+            "displayDate": "Nov 10, 2025",
+            "facility": "Memorial Neurological Institute",
+            "sequences": ["T1", "T1Gd", "T2", "FLAIR"],
+            "magneticField": "3.0T MRI",
+            "segmentationStatus": "Completed (Precomputed / Live Supported)",
+            "hasSegmentation": True,
+            "hasExpertMask": True,
+            "isLiveInference": False,
+            "provenanceLabel": "Synthetic Multimodal Brain Phantom (1.0 mm isotropic)",
+            "voxelSpacingMm": [1.0, 1.0, 1.0],
+            "volumes": {
+                "wtVolumeMl": 24.34,
+                "tcVolumeMl": 11.10,
+                "etVolumeMl": 6.48,
+                "edVolumeMl": 13.24,
+                "ncrVolumeMl": 4.62,
+            },
+            "tumorLocation": {
+                "lobe": "Right Frontoparietal Region",
+                "subregion": "Deep Periventricular White Matter margin",
+                "hemisphere": "Right",
+                "coordinates": {"x": 18.0, "y": 6.0, "z": 4.0},
+                "anteriorPosterior": "Mid-Posterior",
+                "notes": "Examination B1: Baseline demonstration examination on file.",
+            },
+            "reportAvailable": True,
+            "reportId": "DEMO_REP_B1_0108",
+            "clinicalSummary": "Baseline demonstration scan. Initial measured Whole Tumor (WT) volume is 24.34 mL.",
+        },
+        {
+            "demoSlot": "B2",
+            "studyId": "study_exam_01",
+            "patientId": "PAT-2026-0108",
+            "patientName": "Priya Patel",
+            "examinationDate": "2026-02-02T11:30:00Z",
+            "displayDate": "Feb 02, 2026",
+            "facility": "Memorial Neurological Institute",
+            "sequences": ["T1", "T1Gd", "T2", "FLAIR"],
+            "magneticField": "3.0T MRI",
+            "segmentationStatus": "Completed (Precomputed / Live Supported)",
+            "hasSegmentation": True,
+            "hasExpertMask": True,
+            "isLiveInference": False,
+            "provenanceLabel": "Synthetic Multimodal Brain Phantom (1.0 mm isotropic)",
+            "voxelSpacingMm": [1.0, 1.0, 1.0],
+            "volumes": {
+                "wtVolumeMl": 15.03,
+                "tcVolumeMl": 6.39,
+                "etVolumeMl": 3.84,
+                "edVolumeMl": 8.64,
+                "ncrVolumeMl": 2.55,
+            },
+            "tumorLocation": {
+                "lobe": "Right Frontoparietal Region",
+                "subregion": "Subcortical White Matter adjacent to Precentral Gyrus",
+                "hemisphere": "Right",
+                "coordinates": {"x": 18.0, "y": 6.0, "z": 4.0},
+                "anteriorPosterior": "Mid-Posterior",
+                "notes": "Examination B2: Mid-treatment scan demonstrating marked decrease in measured volume.",
+            },
+            "reportAvailable": True,
+            "reportId": "DEMO_REP_B2_0108",
+            "clinicalSummary": "Follow-up scan B2. Measured Whole Tumor (WT) volume decreased to 15.03 mL (-9.31 mL).",
+        },
+        {
+            "demoSlot": "B3",
+            "studyId": "study_exam_04",
+            "patientId": "PAT-2026-0108",
+            "patientName": "Priya Patel",
+            "examinationDate": "2026-04-10T14:30:00Z",
+            "displayDate": "Apr 10, 2026",
+            "facility": "Memorial Neurological Institute",
+            "sequences": ["T1", "T1Gd", "T2", "FLAIR"],
+            "magneticField": "3.0T MRI",
+            "segmentationStatus": "Completed (Precomputed / Live Supported)",
+            "hasSegmentation": True,
+            "hasExpertMask": True,
+            "isLiveInference": False,
+            "provenanceLabel": "Synthetic Multimodal Brain Phantom (1.0 mm isotropic)",
+            "voxelSpacingMm": [1.0, 1.0, 1.0],
+            "volumes": {
+                "wtVolumeMl": 9.95,
+                "tcVolumeMl": 3.95,
+                "etVolumeMl": 2.46,
+                "edVolumeMl": 6.00,
+                "ncrVolumeMl": 1.49,
+            },
+            "tumorLocation": {
+                "lobe": "Right Frontoparietal Region",
+                "subregion": "Subsided peritumoral area with contracted lesion core",
+                "hemisphere": "Right",
+                "coordinates": {"x": 18.0, "y": 6.0, "z": 4.0},
+                "anteriorPosterior": "Posterior aspect",
+                "notes": "Examination B3: Latest scan demonstrating further decreased measured volume.",
+            },
+            "reportAvailable": True,
+            "reportId": "DEMO_REP_B3_0108",
+            "clinicalSummary": "Follow-up scan B3. Measured Whole Tumor (WT) volume decreased further to 9.95 mL (-5.08 mL).",
+        },
+    ],
+}
+
 
 def get_patient_examinations(user_id: str) -> List[Dict[str, Any]]:
     """Retrieves all chronological examinations belonging strictly to the authorized patient."""
@@ -257,4 +477,46 @@ def calculate_longitudinal_trend(examinations: List[Dict[str, Any]]) -> Dict[str
             "A measured decrease or increase does not alone indicate clinical response or disease progression "
             "and must always be correlated with clinical symptoms and doctor assessment."
         ),
+    }
+
+
+def get_patient_demo_examinations(patient_key: str) -> List[Dict[str, Any]]:
+    """Retrieves all 3 demonstration examinations for patient key."""
+    if patient_key in ["pat_001", "PAT-2026-0042", "Aarav Sharma"]:
+        return PATIENT_DEMO_EXAMINATIONS.get("pat_001", [])
+    if patient_key in ["pat_002", "PAT-2026-0108", "Priya Patel"]:
+        return PATIENT_DEMO_EXAMINATIONS.get("pat_002", [])
+    return PATIENT_DEMO_EXAMINATIONS.get(patient_key, [])
+
+
+def get_all_demo_examinations() -> Dict[str, Any]:
+    """Returns structured multi-patient demonstration catalog for the doctor workstation."""
+    return {
+        "patients": [
+            {
+                "id": "pat_001",
+                "patientId": "PAT-2026-0042",
+                "name": "Aarav Sharma",
+                "gender": "Male",
+                "dateOfBirth": "1982-05-18",
+                "expectedTrend": "increasing",
+                "trendDescription": "Monotonically increasing measured tumor volume: A1 (15.03 mL) < A2 (24.34 mL) < A3 (35.51 mL)",
+                "examinations": PATIENT_DEMO_EXAMINATIONS["pat_001"],
+                "trend": calculate_longitudinal_trend(PATIENT_DEMO_EXAMINATIONS["pat_001"]),
+            },
+            {
+                "id": "pat_002",
+                "patientId": "PAT-2026-0108",
+                "name": "Priya Patel",
+                "gender": "Female",
+                "dateOfBirth": "1990-11-04",
+                "expectedTrend": "decreasing",
+                "trendDescription": "Monotonically decreasing measured tumor volume: B1 (24.34 mL) > B2 (15.03 mL) > B3 (9.95 mL)",
+                "examinations": PATIENT_DEMO_EXAMINATIONS["pat_002"],
+                "trend": calculate_longitudinal_trend(PATIENT_DEMO_EXAMINATIONS["pat_002"]),
+            },
+        ],
+        "totalExaminations": 6,
+        "uniqueExaminations": 4,
+        "disclaimer": "Demonstration trajectories for software prototype validation. Not actual patient health histories.",
     }

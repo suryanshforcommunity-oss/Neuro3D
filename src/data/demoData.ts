@@ -6,6 +6,7 @@ import {
   StudyProvenance,
   ModelReliabilityInfo,
   MriSequenceType,
+  EvaluationMetrics,
 } from '../types';
 import { computeBraTSCompositeCounts } from '../utils/volume';
 
@@ -20,75 +21,316 @@ export interface SyntheticVolumeData {
   expertLabelCounts: TumourLabelCounts;
 }
 
+export interface DemoExaminationSlot {
+  slotId: string; // 'A1', 'A2', 'A3', 'B1', 'B2', 'B3'
+  studyId: string; // 'study_exam_01', 'study_exam_02', 'study_exam_03', 'study_exam_04'
+  patientId: string;
+  patientName: string;
+  examinationDate: string;
+  displayDate: string;
+  facility: string;
+  sequences: string[];
+  volumes: {
+    wtVolumeMl: number;
+    tcVolumeMl: number;
+    etVolumeMl: number;
+    edVolumeMl: number;
+    ncrVolumeMl: number;
+  };
+  hasSegmentation: boolean;
+  hasExpertMask: boolean;
+  isLiveInference: boolean;
+  provenanceLabel: string;
+  clinicalSummary: string;
+  tumorLocation: {
+    lobe: string;
+    subregion: string;
+    hemisphere: string;
+    coordinates: { x: number; y: number; z: number };
+    notes: string;
+  };
+}
+
+export interface DemoPatientRecord {
+  id: string;
+  patientId: string;
+  name: string;
+  gender: string;
+  dateOfBirth: string;
+  expectedTrend: 'increasing' | 'decreasing';
+  trendDescription: string;
+  examinations: DemoExaminationSlot[];
+}
+
+export interface DemoExecutionReceipt {
+  device: string;
+  deviceName: string;
+  loadDurationMs: number;
+  preprocessingDurationMs: number;
+  inferenceDurationMs: number;
+  postprocessingDurationMs: number;
+  totalDurationMs: number;
+  timestamp: string;
+  isLiveInference: boolean;
+}
+
+// Multi-Patient Demonstration Catalog (Doctor Workstation)
+export const DEMO_PATIENTS: DemoPatientRecord[] = [
+  {
+    id: 'pat_001',
+    patientId: 'PAT-2026-0042',
+    name: 'Aarav Sharma',
+    gender: 'Male',
+    dateOfBirth: '1982-05-18',
+    expectedTrend: 'increasing',
+    trendDescription: 'Increasing measured tumor volume: A1 (15.03 mL) < A2 (24.34 mL) < A3 (35.51 mL)',
+    examinations: [
+      {
+        slotId: 'A1',
+        studyId: 'study_exam_01',
+        patientId: 'PAT-2026-0042',
+        patientName: 'Aarav Sharma',
+        examinationDate: '2025-10-14T09:30:00Z',
+        displayDate: 'Oct 14, 2025',
+        facility: 'Memorial Neurological Institute',
+        sequences: ['T1', 'T1Gd', 'T2', 'FLAIR'],
+        volumes: { wtVolumeMl: 15.03, tcVolumeMl: 6.39, etVolumeMl: 3.84, edVolumeMl: 8.64, ncrVolumeMl: 2.55 },
+        hasSegmentation: true,
+        hasExpertMask: true,
+        isLiveInference: false,
+        provenanceLabel: 'Synthetic Multimodal Brain Phantom (1.0 mm isotropic)',
+        clinicalSummary: 'Baseline demonstration scan. Initial measured Whole Tumor (WT) volume is 15.03 mL.',
+        tumorLocation: {
+          lobe: 'Right Frontoparietal Region',
+          subregion: 'Subcortical White Matter adjacent to Precentral Gyrus',
+          hemisphere: 'Right',
+          coordinates: { x: 18.0, y: 6.0, z: 4.0 },
+          notes: 'Examination A1: Baseline examination. Localized enhancing lesion with perilesional edema.',
+        },
+      },
+      {
+        slotId: 'A2',
+        studyId: 'study_exam_02',
+        patientId: 'PAT-2026-0042',
+        patientName: 'Aarav Sharma',
+        examinationDate: '2026-01-18T11:15:00Z',
+        displayDate: 'Jan 18, 2026',
+        facility: 'Memorial Neurological Institute',
+        sequences: ['T1', 'T1Gd', 'T2', 'FLAIR'],
+        volumes: { wtVolumeMl: 24.34, tcVolumeMl: 11.10, etVolumeMl: 6.48, edVolumeMl: 13.24, ncrVolumeMl: 4.62 },
+        hasSegmentation: true,
+        hasExpertMask: true,
+        isLiveInference: false,
+        provenanceLabel: 'Synthetic Multimodal Brain Phantom (1.0 mm isotropic)',
+        clinicalSummary: 'Follow-up scan A2. Measured Whole Tumor (WT) volume is 24.34 mL (+9.31 mL).',
+        tumorLocation: {
+          lobe: 'Right Frontoparietal Region',
+          subregion: 'Deep Periventricular White Matter margin',
+          hemisphere: 'Right',
+          coordinates: { x: 18.0, y: 6.0, z: 4.0 },
+          notes: 'Examination A2: Mid follow-up scan demonstrating increased measured segmented volume.',
+        },
+      },
+      {
+        slotId: 'A3',
+        studyId: 'study_exam_03',
+        patientId: 'PAT-2026-0042',
+        patientName: 'Aarav Sharma',
+        examinationDate: '2026-04-22T14:00:00Z',
+        displayDate: 'Apr 22, 2026',
+        facility: 'Memorial Neurological Institute',
+        sequences: ['T1', 'T1Gd', 'T2', 'FLAIR'],
+        volumes: { wtVolumeMl: 35.51, tcVolumeMl: 16.64, etVolumeMl: 9.51, edVolumeMl: 18.87, ncrVolumeMl: 7.13 },
+        hasSegmentation: true,
+        hasExpertMask: true,
+        isLiveInference: false,
+        provenanceLabel: 'Synthetic Multimodal Brain Phantom (1.0 mm isotropic)',
+        clinicalSummary: 'Follow-up scan A3. Measured Whole Tumor (WT) volume is 35.51 mL (+11.17 mL).',
+        tumorLocation: {
+          lobe: 'Right Frontoparietal Region',
+          subregion: 'Extended frontoparietal margins with perilesional edema',
+          hemisphere: 'Right',
+          coordinates: { x: 18.0, y: 6.0, z: 4.0 },
+          notes: 'Examination A3: Latest scan. Measured segmented volume is 35.51 mL.',
+        },
+      },
+    ],
+  },
+  {
+    id: 'pat_002',
+    patientId: 'PAT-2026-0108',
+    name: 'Priya Patel',
+    gender: 'Female',
+    dateOfBirth: '1990-11-04',
+    expectedTrend: 'decreasing',
+    trendDescription: 'Decreasing measured tumor volume: B1 (24.34 mL) > B2 (15.03 mL) > B3 (9.95 mL)',
+    examinations: [
+      {
+        slotId: 'B1',
+        studyId: 'study_exam_02',
+        patientId: 'PAT-2026-0108',
+        patientName: 'Priya Patel',
+        examinationDate: '2025-11-10T10:00:00Z',
+        displayDate: 'Nov 10, 2025',
+        facility: 'Memorial Neurological Institute',
+        sequences: ['T1', 'T1Gd', 'T2', 'FLAIR'],
+        volumes: { wtVolumeMl: 24.34, tcVolumeMl: 11.10, etVolumeMl: 6.48, edVolumeMl: 13.24, ncrVolumeMl: 4.62 },
+        hasSegmentation: true,
+        hasExpertMask: true,
+        isLiveInference: false,
+        provenanceLabel: 'Synthetic Multimodal Brain Phantom (1.0 mm isotropic)',
+        clinicalSummary: 'Baseline demonstration scan. Initial measured Whole Tumor (WT) volume is 24.34 mL.',
+        tumorLocation: {
+          lobe: 'Right Frontoparietal Region',
+          subregion: 'Deep Periventricular White Matter margin',
+          hemisphere: 'Right',
+          coordinates: { x: 18.0, y: 6.0, z: 4.0 },
+          notes: 'Examination B1: Baseline demonstration examination on file.',
+        },
+      },
+      {
+        slotId: 'B2',
+        studyId: 'study_exam_01',
+        patientId: 'PAT-2026-0108',
+        patientName: 'Priya Patel',
+        examinationDate: '2026-02-02T11:30:00Z',
+        displayDate: 'Feb 02, 2026',
+        facility: 'Memorial Neurological Institute',
+        sequences: ['T1', 'T1Gd', 'T2', 'FLAIR'],
+        volumes: { wtVolumeMl: 15.03, tcVolumeMl: 6.39, etVolumeMl: 3.84, edVolumeMl: 8.64, ncrVolumeMl: 2.55 },
+        hasSegmentation: true,
+        hasExpertMask: true,
+        isLiveInference: false,
+        provenanceLabel: 'Synthetic Multimodal Brain Phantom (1.0 mm isotropic)',
+        clinicalSummary: 'Follow-up scan B2. Measured Whole Tumor (WT) volume decreased to 15.03 mL (-9.31 mL).',
+        tumorLocation: {
+          lobe: 'Right Frontoparietal Region',
+          subregion: 'Subcortical White Matter adjacent to Precentral Gyrus',
+          hemisphere: 'Right',
+          coordinates: { x: 18.0, y: 6.0, z: 4.0 },
+          notes: 'Examination B2: Mid-treatment scan demonstrating marked decrease in measured volume.',
+        },
+      },
+      {
+        slotId: 'B3',
+        studyId: 'study_exam_04',
+        patientId: 'PAT-2026-0108',
+        patientName: 'Priya Patel',
+        examinationDate: '2026-04-10T14:30:00Z',
+        displayDate: 'Apr 10, 2026',
+        facility: 'Memorial Neurological Institute',
+        sequences: ['T1', 'T1Gd', 'T2', 'FLAIR'],
+        volumes: { wtVolumeMl: 9.95, tcVolumeMl: 3.95, etVolumeMl: 2.46, edVolumeMl: 6.00, ncrVolumeMl: 1.49 },
+        hasSegmentation: true,
+        hasExpertMask: true,
+        isLiveInference: false,
+        provenanceLabel: 'Synthetic Multimodal Brain Phantom (1.0 mm isotropic)',
+        clinicalSummary: 'Follow-up scan B3. Measured Whole Tumor (WT) volume decreased further to 9.95 mL (-5.08 mL).',
+        tumorLocation: {
+          lobe: 'Right Frontoparietal Region',
+          subregion: 'Subsided peritumoral area with contracted lesion core',
+          hemisphere: 'Right',
+          coordinates: { x: 18.0, y: 6.0, z: 4.0 },
+          notes: 'Examination B3: Latest scan demonstrating further decreased measured volume.',
+        },
+      },
+    ],
+  },
+];
+
+// Examination Morphological Parameters for procedural 3D volume synthesis
+const EXAMINATION_CONFIGS: Record<string, {
+  radX: number;
+  radY: number;
+  radZ: number;
+  edemaFactor: number;
+  coreFactor: number;
+  ncrFactor: number;
+  wtDice: number;
+  tcDice: number;
+  etDice: number;
+}> = {
+  study_exam_01: {
+    radX: 14.0,
+    radY: 16.0,
+    radZ: 13.0,
+    edemaFactor: 1.15,
+    coreFactor: 0.65,
+    ncrFactor: 0.35,
+    wtDice: 0.9818,
+    tcDice: 0.9540,
+    etDice: 0.9412,
+  },
+  study_exam_02: {
+    radX: 16.5,
+    radY: 18.8,
+    radZ: 15.2,
+    edemaFactor: 1.15,
+    coreFactor: 0.68,
+    ncrFactor: 0.38,
+    wtDice: 0.9813,
+    tcDice: 0.9521,
+    etDice: 0.9388,
+  },
+  study_exam_03: {
+    radX: 18.8,
+    radY: 21.2,
+    radZ: 17.0,
+    edemaFactor: 1.16,
+    coreFactor: 0.70,
+    ncrFactor: 0.40,
+    wtDice: 0.9806,
+    tcDice: 0.9485,
+    etDice: 0.9310,
+  },
+  study_exam_04: {
+    radX: 12.2,
+    radY: 14.0,
+    radZ: 11.4,
+    edemaFactor: 1.14,
+    coreFactor: 0.62,
+    ncrFactor: 0.32,
+    wtDice: 0.9800,
+    tcDice: 0.9510,
+    etDice: 0.9345,
+  },
+};
+
+// Default backwards-compatible provenance
 export const DEMO_PROVENANCE: StudyProvenance = {
-  studyId: 'BRATS_2023_RESEARCH_DEMO_042',
-  patientDeidentifiedId: 'SYNTHETIC_RESEARCH_PHANTOM_042',
-  institution: 'Open Brain Research & Teaching Consortium',
-  createdTimestamp: '2026-10-14T09:30:00Z',
-  processedTimestamp: '2026-10-14T09:34:12Z',
+  studyId: 'study_exam_01',
+  patientDeidentifiedId: 'PAT-2026-0042',
+  institution: 'Memorial Neurological Institute',
+  createdTimestamp: '2025-10-14T09:30:00Z',
+  processedTimestamp: '2025-10-14T09:34:12Z',
   softwareVersion: 'NeuroScope-3D v1.0.0-rc1',
-  gitCommit: 'a89c32e9',
+  gitCommit: 'b30c05a',
   isDemoData: true,
   files: [
-    {
-      sequence: 'T1',
-      filename: 'BraTS2023_00042_t1.nii.gz',
-      fileSize: 4125890,
-      sha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-      dimensions: '128 × 128 × 96',
-      spacing: '1.00 × 1.00 × 1.00 mm',
-    },
-    {
-      sequence: 'T1Gd',
-      filename: 'BraTS2023_00042_t1ce.nii.gz',
-      fileSize: 4210450,
-      sha256: '5f9b4c2b9a7f34f0e9b9c1d683a54b3834b9d0e7685f0ef3524a87c1265c719e',
-      dimensions: '128 × 128 × 96',
-      spacing: '1.00 × 1.00 × 1.00 mm',
-    },
-    {
-      sequence: 'T2',
-      filename: 'BraTS2023_00042_t2.nii.gz',
-      fileSize: 4180210,
-      sha256: 'd4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35',
-      dimensions: '128 × 128 × 96',
-      spacing: '1.00 × 1.00 × 1.00 mm',
-    },
-    {
-      sequence: 'FLAIR',
-      filename: 'BraTS2023_00042_flair.nii.gz',
-      fileSize: 4195120,
-      sha256: '4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce',
-      dimensions: '128 × 128 × 96',
-      spacing: '1.00 × 1.00 × 1.00 mm',
-    },
-    {
-      sequence: 'EXPERT_MASK',
-      filename: 'BraTS2023_00042_seg_expert.nii.gz',
-      fileSize: 845200,
-      sha256: '7d793037a0760186574b0282f2f435e7b1e50774690f45041ec3a700fb7b5014',
-      dimensions: '128 × 128 × 96',
-      spacing: '1.00 × 1.00 × 1.00 mm',
-    },
+    { sequence: 'T1', filename: 't1.nii.gz', fileSize: 4125890, sha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', dimensions: '128 × 128 × 96', spacing: '1.00 × 1.00 × 1.00 mm' },
+    { sequence: 'T1Gd', filename: 't1ce.nii.gz', fileSize: 4210450, sha256: '5f9b4c2b9a7f34f0e9b9c1d683a54b3834b9d0e7685f0ef3524a87c1265c719e', dimensions: '128 × 128 × 96', spacing: '1.00 × 1.00 × 1.00 mm' },
+    { sequence: 'T2', filename: 't2.nii.gz', fileSize: 4180210, sha256: 'd4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35', dimensions: '128 × 128 × 96', spacing: '1.00 × 1.00 × 1.00 mm' },
+    { sequence: 'FLAIR', filename: 'flair.nii.gz', fileSize: 4195120, sha256: '4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce', dimensions: '128 × 128 × 96', spacing: '1.00 × 1.00 × 1.00 mm' },
+    { sequence: 'EXPERT_MASK', filename: 'expert_mask.nii.gz', fileSize: 845200, sha256: '7d793037a0760186574b0282f2f435e7b1e50774690f45041ec3a700fb7b5014', dimensions: '128 × 128 × 96', spacing: '1.00 × 1.00 × 1.00 mm' },
   ],
   volumes: {
-    wtMl: 15.42,
-    tcMl: 5.60,
-    etMl: 3.45,
+    wtMl: 15.03,
+    tcMl: 6.39,
+    etMl: 3.84,
     spacing: '1.00 × 1.00 × 1.00 mm',
     formula: 'Volume (mL) = Voxel Count × (dx × dy × dz) / 1000',
   },
   metrics: {
     hasExpertMask: true,
-    wtDice: 0.9412,
-    tcDice: 0.8935,
-    etDice: 0.8641,
-    wtSensitivity: 0.9521,
-    tcSensitivity: 0.8870,
-    etSensitivity: 0.8540,
-    wtSpecificity: 0.9984,
-    tcSpecificity: 0.9991,
-    etSpecificity: 0.9995,
+    wtDice: 0.9818,
+    tcDice: 0.9540,
+    etDice: 0.9412,
+    wtSensitivity: 0.9840,
+    tcSensitivity: 0.9580,
+    etSensitivity: 0.9450,
+    wtSpecificity: 0.9991,
+    tcSpecificity: 0.9994,
+    etSpecificity: 0.9998,
   },
   disclaimer:
     'Research and teaching prototype only. Not for clinical diagnosis or treatment decisions. Model outputs are experimental and require independent expert review.',
@@ -101,7 +343,7 @@ export const DEMO_MODEL_RELIABILITY: ModelReliabilityInfo = {
   architecture: '3D Encoder-Decoder with Squeeze-and-Excitation Residual Blocks',
   backendConnected: false,
   inferenceAvailable: false,
-  statusMessage: 'Model inference is not connected. No AI prediction is available.',
+  statusMessage: 'Model inference is not connected. Operating in demonstration mode.',
   preprocessingPipeline: [
     'Automated skull-stripping & neck removal (HD-BET)',
     'Co-registration to SRI24 neurological atlas space',
@@ -122,17 +364,19 @@ export const DEMO_MODEL_RELIABILITY: ModelReliabilityInfo = {
   ],
 };
 
-/**
- * Procedurally generates an anatomically illustrative 3D brain phantom
- * with cerebral hemispheres, ventricular cavities, and a nested tumour in the right hemisphere.
- * This is 100% synthetic research data for instant preview and offline testing.
- */
-let cachedDemoVolume: SyntheticVolumeData | null = null;
+// Cache for synthesized 3D volume arrays
+const cachedDemoVolumes: Record<string, SyntheticVolumeData> = {};
 
-export function getOrCreateDemoVolume(): SyntheticVolumeData {
-  if (cachedDemoVolume) {
-    return cachedDemoVolume;
+/**
+ * Procedurally generates an anatomically illustrative 3D brain phantom for any of the 4 demonstration examinations.
+ * Matches exact dimensions (128x128x96), 1.0mm spacing, and tissue intensity profiles.
+ */
+export function getOrCreateDemoVolume(studyId: string = 'study_exam_01'): SyntheticVolumeData {
+  if (cachedDemoVolumes[studyId]) {
+    return cachedDemoVolumes[studyId];
   }
+
+  const cfg = EXAMINATION_CONFIGS[studyId] || EXAMINATION_CONFIGS['study_exam_01'];
 
   const dimX = 128;
   const dimY = 128;
@@ -150,7 +394,7 @@ export function getOrCreateDemoVolume(): SyntheticVolumeData {
   const centerY = dimY / 2;
   const centerZ = dimZ / 2;
 
-  // Tumour center in right hemisphere (X > centerX)
+  // Tumour center in right hemisphere
   const tumourCenterX = centerX + 18;
   const tumourCenterY = centerY + 6;
   const tumourCenterZ = centerZ + 4;
@@ -177,61 +421,53 @@ export function getOrCreateDemoVolume(): SyntheticVolumeData {
 
         if (rBrain + fissureIndent < 1.0) {
           // Inside brain parenchyma
-          // Ventricles (two lateral ventricles)
+          // Lateral ventricles
           const ventLeft = Math.pow((i - (centerX - 9)) / 6, 2) + Math.pow((j - centerY) / 18, 2) + Math.pow((k - centerZ) / 10, 2);
           const ventRight = Math.pow((i - (centerX + 9)) / 6, 2) + Math.pow((j - centerY) / 18, 2) + Math.pow((k - centerZ) / 10, 2);
           const isVentricle = ventLeft < 1.0 || ventRight < 1.0;
 
-          // Base tissue intensities
-          let t1Val = isVentricle ? 25 : 140; // CSF is dark on T1
+          let t1Val = isVentricle ? 25 : 140;
           let t1ceVal = t1Val;
-          let t2Val = isVentricle ? 245 : 95; // CSF is bright on T2
-          let flairVal = isVentricle ? 15 : 110; // CSF suppressed on FLAIR
+          let t2Val = isVentricle ? 245 : 95;
+          let flairVal = isVentricle ? 15 : 110;
 
-          // Tumour distance calculation (anisotropic ellipsoid)
-          const tdx = (i - tumourCenterX) / 14;
-          const tdy = (j - tumourCenterY) / 16;
-          const tdz = (k - tumourCenterZ) / 13;
+          // Tumour distance calculation using exam-specific radii
+          const tdx = (i - tumourCenterX) / cfg.radX;
+          const tdy = (j - tumourCenterY) / cfg.radY;
+          const tdz = (k - tumourCenterZ) / cfg.radZ;
           const tumourDistSq = tdx * tdx + tdy * tdy + tdz * tdz;
 
-          // Nested tumour structure:
-          // r < 0.35: Necrotic core (NCR, label 1)
-          // 0.35 <= r < 0.65: Enhancing rim (ET, label 4)
-          // 0.65 <= r < 1.15: Edema halo (ED, label 2)
-          if (tumourDistSq < 1.15) {
-            if (tumourDistSq < 0.35) {
-              // NCR
+          if (tumourDistSq < cfg.edemaFactor) {
+            if (tumourDistSq < cfg.ncrFactor) {
               segMask[index] = 1;
               ncrCount++;
-              t1Val = 45; // Dark necrotic debris
+              t1Val = 45;
               t1ceVal = 50;
               t2Val = 180;
               flairVal = 160;
-            } else if (tumourDistSq < 0.65) {
-              // ET
+            } else if (tumourDistSq < cfg.coreFactor) {
               segMask[index] = 4;
               etCount++;
               t1Val = 120;
-              t1ceVal = 240; // Strong gadolinium enhancement!
+              t1ceVal = 240;
               t2Val = 160;
               flairVal = 220;
             } else {
-              // ED
               segMask[index] = 2;
               edCount++;
               t1Val = 80;
               t1ceVal = 85;
-              t2Val = 230; // Vasogenic edema bright on T2
-              flairVal = 245; // Edema highly hyperintense on FLAIR!
+              t2Val = 230;
+              flairVal = 245;
             }
 
-            // Expert mask slightly varied for realistic metrics
+            // Expert ground truth with natural boundary perturbation
             const expertDistSq = tumourDistSq + Math.sin(i * 0.5) * 0.04;
-            if (expertDistSq < 1.12) {
-              if (expertDistSq < 0.34) {
+            if (expertDistSq < cfg.edemaFactor * 0.98) {
+              if (expertDistSq < cfg.ncrFactor * 0.98) {
                 expertMask[index] = 1;
                 expNcrCount++;
-              } else if (expertDistSq < 0.64) {
+              } else if (expertDistSq < cfg.coreFactor * 0.98) {
                 expertMask[index] = 4;
                 expEtCount++;
               } else {
@@ -246,7 +482,6 @@ export function getOrCreateDemoVolume(): SyntheticVolumeData {
           t2Data[index] = Math.min(255, Math.max(0, t2Val));
           flairData[index] = Math.min(255, Math.max(0, flairVal));
         } else {
-          // Background air
           t1Data[index] = 0;
           t1ceData[index] = 0;
           t2Data[index] = 0;
@@ -267,7 +502,7 @@ export function getOrCreateDemoVolume(): SyntheticVolumeData {
     [0, 0, 0, 1],
   ];
 
-  cachedDemoVolume = {
+  const generatedVolume: SyntheticVolumeData = {
     dimensions,
     spacing,
     affine,
@@ -292,5 +527,56 @@ export function getOrCreateDemoVolume(): SyntheticVolumeData {
     }),
   };
 
-  return cachedDemoVolume;
+  cachedDemoVolumes[studyId] = generatedVolume;
+  return generatedVolume;
+}
+
+/**
+ * Builds tailored study provenance for any demonstration examination slot.
+ */
+export function getDemoProvenanceForSlot(
+  slot: DemoExaminationSlot,
+  receipt?: DemoExecutionReceipt | null,
+  liveMetrics?: EvaluationMetrics | null
+): StudyProvenance {
+  const cfg = EXAMINATION_CONFIGS[slot.studyId] || EXAMINATION_CONFIGS['study_exam_01'];
+
+  return {
+    studyId: slot.studyId,
+    patientDeidentifiedId: slot.patientId,
+    institution: slot.facility,
+    createdTimestamp: slot.examinationDate,
+    processedTimestamp: receipt ? receipt.timestamp : slot.examinationDate,
+    softwareVersion: 'NeuroScope-3D v1.0.0-rc1',
+    gitCommit: 'b30c05a',
+    isDemoData: true,
+    files: [
+      { sequence: 'T1', filename: `${slot.studyId}_t1.nii.gz`, fileSize: 4125890, sha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', dimensions: '128 × 128 × 96', spacing: '1.00 × 1.00 × 1.00 mm' },
+      { sequence: 'T1Gd', filename: `${slot.studyId}_t1ce.nii.gz`, fileSize: 4210450, sha256: '5f9b4c2b9a7f34f0e9b9c1d683a54b3834b9d0e7685f0ef3524a87c1265c719e', dimensions: '128 × 128 × 96', spacing: '1.00 × 1.00 × 1.00 mm' },
+      { sequence: 'T2', filename: `${slot.studyId}_t2.nii.gz`, fileSize: 4180210, sha256: 'd4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35', dimensions: '128 × 128 × 96', spacing: '1.00 × 1.00 × 1.00 mm' },
+      { sequence: 'FLAIR', filename: `${slot.studyId}_flair.nii.gz`, fileSize: 4195120, sha256: '4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce', dimensions: '128 × 128 × 96', spacing: '1.00 × 1.00 × 1.00 mm' },
+      { sequence: 'EXPERT_MASK', filename: `${slot.studyId}_expert_mask.nii.gz`, fileSize: 845200, sha256: '7d793037a0760186574b0282f2f435e7b1e50774690f45041ec3a700fb7b5014', dimensions: '128 × 128 × 96', spacing: '1.00 × 1.00 × 1.00 mm' },
+    ],
+    volumes: {
+      wtMl: slot.volumes.wtVolumeMl,
+      tcMl: slot.volumes.tcVolumeMl,
+      etMl: slot.volumes.etVolumeMl,
+      spacing: '1.00 × 1.00 × 1.00 mm',
+      formula: 'Volume (mL) = Voxel Count × (dx × dy × dz) / 1000',
+    },
+    metrics: liveMetrics || {
+      hasExpertMask: true,
+      wtDice: cfg.wtDice,
+      tcDice: cfg.tcDice,
+      etDice: cfg.etDice,
+      wtSensitivity: 0.9820,
+      tcSensitivity: 0.9540,
+      etSensitivity: 0.9410,
+      wtSpecificity: 0.9991,
+      tcSpecificity: 0.9994,
+      etSpecificity: 0.9998,
+    },
+    disclaimer:
+      'Research and teaching prototype only. Not for clinical diagnosis or treatment decisions. Model outputs are experimental and require independent expert review.',
+  };
 }
