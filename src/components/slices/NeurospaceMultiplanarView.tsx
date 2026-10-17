@@ -27,12 +27,14 @@ export interface NeurospaceMultiplanarViewProps {
   activeSequence?: MriSequenceType;
   onSelectSequence?: (seq: MriSequenceType) => void;
   onCenterTumour?: () => void;
+  isDemoMode?: boolean;
 }
 
 export const NeurospaceMultiplanarView: React.FC<NeurospaceMultiplanarViewProps> = ({
   crosshair,
   onUpdateCrosshair,
   dimensions,
+  spacing,
   affine,
   volumeData,
   segmentationMask,
@@ -43,12 +45,12 @@ export const NeurospaceMultiplanarView: React.FC<NeurospaceMultiplanarViewProps>
   activeSequence = 'T1Gd',
   onSelectSequence,
   onCenterTumour,
+  isDemoMode = false,
 }) => {
-  // Use real BraTS dimensions if available (240 x 240 x 155) or fallback to prop dimensions
-  const isBratsCase = dimensions.dimX === 240 || dimensions.dimZ === 155;
-  const dimX = isBratsCase ? 240 : dimensions.dimX;
-  const dimY = isBratsCase ? 240 : dimensions.dimY;
-  const dimZ = isBratsCase ? 155 : dimensions.dimZ;
+  // Strictly use active volume dimensions without hardcoded shape overrides
+  const dimX = Math.max(1, dimensions.dimX);
+  const dimY = Math.max(1, dimensions.dimY);
+  const dimZ = Math.max(1, dimensions.dimZ);
 
   const curX = Math.max(0, Math.min(dimX - 1, crosshair.i));
   const curY = Math.max(0, Math.min(dimY - 1, crosshair.j));
@@ -65,14 +67,25 @@ export const NeurospaceMultiplanarView: React.FC<NeurospaceMultiplanarViewProps>
     affine[2][0] * curX + affine[2][1] * curY + affine[2][2] * curZ + affine[2][3]
   );
 
-  // Genuine BraTS real MRI slices fetched from backend
+  // Backend slice state (only used when no in-memory volume buffer is available)
   const [axialData, setAxialData] = useState<SliceRenderResult | null>(null);
   const [coronalData, setCoronalData] = useState<SliceRenderResult | null>(null);
   const [sagittalData, setSagittalData] = useState<SliceRenderResult | null>(null);
 
-  // Fetch Axial real MRI slice
+  // When active in-memory volumeData is present or demo mode is disabled, clear backend demo slices
   useEffect(() => {
+    if (!isDemoMode || (volumeData && volumeData.length >= dimX * dimY * dimZ)) {
+      setAxialData(null);
+      setCoronalData(null);
+      setSagittalData(null);
+    }
+  }, [isDemoMode, volumeData, dimX, dimY, dimZ]);
+
+  // Fetch Axial slice from backend ONLY if demo mode is active and in-memory volumeData is not present
+  useEffect(() => {
+    if (!isDemoMode || (volumeData && volumeData.length >= dimX * dimY * dimZ)) return;
     let isCancelled = false;
+    const controller = new AbortController();
     const params = new URLSearchParams({
       plane: 'axial',
       index: String(curZ),
@@ -86,7 +99,9 @@ export const NeurospaceMultiplanarView: React.FC<NeurospaceMultiplanarViewProps>
       render_mode: 'predicted',
     });
 
-    fetch(`http://127.0.0.1:8000/api/v1/studies/default/slice?${params.toString()}`)
+    fetch(`http://127.0.0.1:8000/api/v1/studies/default/slice?${params.toString()}`, {
+      signal: controller.signal,
+    })
       .then(res => (res.ok ? res.json() : null))
       .then(data => {
         if (!isCancelled && data && data.image) setAxialData(data);
@@ -95,12 +110,15 @@ export const NeurospaceMultiplanarView: React.FC<NeurospaceMultiplanarViewProps>
 
     return () => {
       isCancelled = true;
+      controller.abort();
     };
-  }, [curZ, activeSequence, visibility.wt, visibility.tc, visibility.et, opacity.wt, opacity.tc, opacity.et]);
+  }, [isDemoMode, volumeData, dimX, dimY, dimZ, curZ, activeSequence, visibility.wt, visibility.tc, visibility.et, opacity.wt, opacity.tc, opacity.et]);
 
-  // Fetch Coronal real MRI slice
+  // Fetch Coronal slice from backend ONLY if demo mode is active and in-memory volumeData is not present
   useEffect(() => {
+    if (!isDemoMode || (volumeData && volumeData.length >= dimX * dimY * dimZ)) return;
     let isCancelled = false;
+    const controller = new AbortController();
     const params = new URLSearchParams({
       plane: 'coronal',
       index: String(curY),
@@ -114,7 +132,9 @@ export const NeurospaceMultiplanarView: React.FC<NeurospaceMultiplanarViewProps>
       render_mode: 'predicted',
     });
 
-    fetch(`http://127.0.0.1:8000/api/v1/studies/default/slice?${params.toString()}`)
+    fetch(`http://127.0.0.1:8000/api/v1/studies/default/slice?${params.toString()}`, {
+      signal: controller.signal,
+    })
       .then(res => (res.ok ? res.json() : null))
       .then(data => {
         if (!isCancelled && data && data.image) setCoronalData(data);
@@ -123,12 +143,15 @@ export const NeurospaceMultiplanarView: React.FC<NeurospaceMultiplanarViewProps>
 
     return () => {
       isCancelled = true;
+      controller.abort();
     };
-  }, [curY, activeSequence, visibility.wt, visibility.tc, visibility.et, opacity.wt, opacity.tc, opacity.et]);
+  }, [isDemoMode, volumeData, dimX, dimY, dimZ, curY, activeSequence, visibility.wt, visibility.tc, visibility.et, opacity.wt, opacity.tc, opacity.et]);
 
-  // Fetch Sagittal real MRI slice
+  // Fetch Sagittal slice from backend ONLY if demo mode is active and in-memory volumeData is not present
   useEffect(() => {
+    if (!isDemoMode || (volumeData && volumeData.length >= dimX * dimY * dimZ)) return;
     let isCancelled = false;
+    const controller = new AbortController();
     const params = new URLSearchParams({
       plane: 'sagittal',
       index: String(curX),
@@ -142,7 +165,9 @@ export const NeurospaceMultiplanarView: React.FC<NeurospaceMultiplanarViewProps>
       render_mode: 'predicted',
     });
 
-    fetch(`http://127.0.0.1:8000/api/v1/studies/default/slice?${params.toString()}`)
+    fetch(`http://127.0.0.1:8000/api/v1/studies/default/slice?${params.toString()}`, {
+      signal: controller.signal,
+    })
       .then(res => (res.ok ? res.json() : null))
       .then(data => {
         if (!isCancelled && data && data.image) setSagittalData(data);
@@ -151,8 +176,9 @@ export const NeurospaceMultiplanarView: React.FC<NeurospaceMultiplanarViewProps>
 
     return () => {
       isCancelled = true;
+      controller.abort();
     };
-  }, [curX, activeSequence, visibility.wt, visibility.tc, visibility.et, opacity.wt, opacity.tc, opacity.et]);
+  }, [isDemoMode, volumeData, dimX, dimY, dimZ, curX, activeSequence, visibility.wt, visibility.tc, visibility.et, opacity.wt, opacity.tc, opacity.et]);
 
   // In-memory fallback extraction for offline resilience
   const fallbackSlices = useMemo(() => {
@@ -236,6 +262,8 @@ export const NeurospaceMultiplanarView: React.FC<NeurospaceMultiplanarViewProps>
     };
   }, [volumeData, segmentationMask, expertMask, dimX, dimY, dimZ, curX, curY, curZ]);
 
+  const [expandedPlane, setExpandedPlane] = useState<'axial' | 'coronal' | 'sagittal' | null>(null);
+
   const sequences: { key: MriSequenceType; label: string; desc: string }[] = [
     { key: 'T1', label: 'T1', desc: 'Native anatomical baseline' },
     { key: 'T1Gd', label: 'T1Gd', desc: 'Post-contrast active enhancement' },
@@ -259,6 +287,58 @@ export const NeurospaceMultiplanarView: React.FC<NeurospaceMultiplanarViewProps>
                 🎯 Center on Suspected Tumour
               </button>
             )}
+
+            {/* View Mode Selector: All 3 Planes vs Individual Plane Full-Width */}
+            <div className="flex items-center gap-1 bg-[#0f172a] p-0.5 rounded-lg border border-slate-700/80">
+              <button
+                type="button"
+                onClick={() => setExpandedPlane(null)}
+                className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold transition cursor-pointer ${
+                  expandedPlane === null
+                    ? 'bg-sky-500 text-white shadow-xs'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+                title="Show all 3 planes side-by-side"
+              >
+                ⊞ All 3 Planes
+              </button>
+              <button
+                type="button"
+                onClick={() => setExpandedPlane('axial')}
+                className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold transition cursor-pointer ${
+                  expandedPlane === 'axial'
+                    ? 'bg-sky-500 text-white shadow-xs'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+                title="Expand Axial plane to full width"
+              >
+                Axial
+              </button>
+              <button
+                type="button"
+                onClick={() => setExpandedPlane('coronal')}
+                className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold transition cursor-pointer ${
+                  expandedPlane === 'coronal'
+                    ? 'bg-sky-500 text-white shadow-xs'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+                title="Expand Coronal plane to full width"
+              >
+                Coronal
+              </button>
+              <button
+                type="button"
+                onClick={() => setExpandedPlane('sagittal')}
+                className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold transition cursor-pointer ${
+                  expandedPlane === 'sagittal'
+                    ? 'bg-sky-500 text-white shadow-xs'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+                title="Expand Sagittal plane to full width"
+              >
+                Sagittal
+              </button>
+            </div>
           </div>
 
           <div className="multiplanar-controls-group">
@@ -306,83 +386,101 @@ export const NeurospaceMultiplanarView: React.FC<NeurospaceMultiplanarViewProps>
         </p>
       </div>
 
-      {/* 3 Orthogonal Views in 3 Columns */}
-      <div className="multiplanar-grid">
+      {/* Orthogonal Views Grid (or Single Expanded Plane) */}
+      <div className={`multiplanar-grid ${expandedPlane ? 'single-plane' : ''}`}>
         {/* Axial Slice Panel */}
-        <NeurospaceSlice2D
-          plane="axial"
-          currentIndex={curZ}
-          maxIndex={dimZ - 1}
-          dimCols={axialData?.width || dimX}
-          dimRows={axialData?.height || dimY}
-          crosshairPixel={{ col: curX, row: curY }}
-          sliceData={axialData}
-          volumeSlice={fallbackSlices.axialVol}
-          segSlice={fallbackSlices.axialSeg}
-          expertSlice={fallbackSlices.axialExp}
-          worldMm={worldZ}
-          showWt={visibility.wt}
-          showTc={visibility.tc}
-          showEt={visibility.et}
-          opacityWt={opacity.wt}
-          opacityTc={opacity.tc}
-          opacityEt={opacity.et}
-          windowLevel={windowLevel}
-          onIndexChange={idx => onUpdateCrosshair({ k: idx })}
-          onSliceClick={(col, row) => onUpdateCrosshair({ i: col, j: row })}
-        />
+        {(!expandedPlane || expandedPlane === 'axial') && (
+          <NeurospaceSlice2D
+            plane="axial"
+            currentIndex={curZ}
+            maxIndex={dimZ - 1}
+            dimCols={axialData?.width || dimX}
+            dimRows={axialData?.height || dimY}
+            colSpacing={spacing?.x || 1.0}
+            rowSpacing={spacing?.y || 1.0}
+            crosshairPixel={{ col: curX, row: curY }}
+            sliceData={axialData}
+            volumeSlice={fallbackSlices.axialVol}
+            segSlice={fallbackSlices.axialSeg}
+            expertSlice={fallbackSlices.axialExp}
+            worldMm={worldZ}
+            showWt={visibility.wt}
+            showTc={visibility.tc}
+            showEt={visibility.et}
+            opacityWt={opacity.wt}
+            opacityTc={opacity.tc}
+            opacityEt={opacity.et}
+            windowLevel={windowLevel}
+            isExpanded={expandedPlane === 'axial'}
+            onToggleExpand={() => setExpandedPlane(expandedPlane === 'axial' ? null : 'axial')}
+            onIndexChange={idx => onUpdateCrosshair({ k: idx })}
+            onSliceClick={(col, row) => onUpdateCrosshair({ i: col, j: row })}
+          />
+        )}
 
         {/* Coronal Slice Panel */}
-        <NeurospaceSlice2D
-          plane="coronal"
-          currentIndex={curY}
-          maxIndex={dimY - 1}
-          dimCols={coronalData?.width || dimX}
-          dimRows={coronalData?.height || dimZ}
-          crosshairPixel={{ col: curX, row: (coronalData ? 154 - curZ : dimZ - 1 - curZ) }}
-          sliceData={coronalData}
-          volumeSlice={fallbackSlices.coronalVol}
-          segSlice={fallbackSlices.coronalSeg}
-          expertSlice={fallbackSlices.coronalExp}
-          worldMm={worldY}
-          showWt={visibility.wt}
-          showTc={visibility.tc}
-          showEt={visibility.et}
-          opacityWt={opacity.wt}
-          opacityTc={opacity.tc}
-          opacityEt={opacity.et}
-          windowLevel={windowLevel}
-          onIndexChange={idx => onUpdateCrosshair({ j: idx })}
-          onSliceClick={(col, row) =>
-            onUpdateCrosshair({ i: col, k: coronalData ? 154 - row : dimZ - 1 - row })
-          }
-        />
+        {(!expandedPlane || expandedPlane === 'coronal') && (
+          <NeurospaceSlice2D
+            plane="coronal"
+            currentIndex={curY}
+            maxIndex={dimY - 1}
+            dimCols={coronalData?.width || dimX}
+            dimRows={coronalData?.height || dimZ}
+            colSpacing={spacing?.x || 1.0}
+            rowSpacing={spacing?.z || 1.0}
+            crosshairPixel={{ col: curX, row: dimZ - 1 - curZ }}
+            sliceData={coronalData}
+            volumeSlice={fallbackSlices.coronalVol}
+            segSlice={fallbackSlices.coronalSeg}
+            expertSlice={fallbackSlices.coronalExp}
+            worldMm={worldY}
+            showWt={visibility.wt}
+            showTc={visibility.tc}
+            showEt={visibility.et}
+            opacityWt={opacity.wt}
+            opacityTc={opacity.tc}
+            opacityEt={opacity.et}
+            windowLevel={windowLevel}
+            isExpanded={expandedPlane === 'coronal'}
+            onToggleExpand={() => setExpandedPlane(expandedPlane === 'coronal' ? null : 'coronal')}
+            onIndexChange={idx => onUpdateCrosshair({ j: idx })}
+            onSliceClick={(col, row) =>
+              onUpdateCrosshair({ i: col, k: dimZ - 1 - row })
+            }
+          />
+        )}
 
         {/* Sagittal Slice Panel */}
-        <NeurospaceSlice2D
-          plane="sagittal"
-          currentIndex={curX}
-          maxIndex={dimX - 1}
-          dimCols={sagittalData?.width || dimY}
-          dimRows={sagittalData?.height || dimZ}
-          crosshairPixel={{ col: curY, row: (sagittalData ? 154 - curZ : dimZ - 1 - curZ) }}
-          sliceData={sagittalData}
-          volumeSlice={fallbackSlices.sagittalVol}
-          segSlice={fallbackSlices.sagittalSeg}
-          expertSlice={fallbackSlices.sagittalExp}
-          worldMm={worldX}
-          showWt={visibility.wt}
-          showTc={visibility.tc}
-          showEt={visibility.et}
-          opacityWt={opacity.wt}
-          opacityTc={opacity.tc}
-          opacityEt={opacity.et}
-          windowLevel={windowLevel}
-          onIndexChange={idx => onUpdateCrosshair({ i: idx })}
-          onSliceClick={(col, row) =>
-            onUpdateCrosshair({ j: col, k: sagittalData ? 154 - row : dimZ - 1 - row })
-          }
-        />
+        {(!expandedPlane || expandedPlane === 'sagittal') && (
+          <NeurospaceSlice2D
+            plane="sagittal"
+            currentIndex={curX}
+            maxIndex={dimX - 1}
+            dimCols={sagittalData?.width || dimY}
+            dimRows={sagittalData?.height || dimZ}
+            colSpacing={spacing?.y || 1.0}
+            rowSpacing={spacing?.z || 1.0}
+            crosshairPixel={{ col: curY, row: dimZ - 1 - curZ }}
+            sliceData={sagittalData}
+            volumeSlice={fallbackSlices.sagittalVol}
+            segSlice={fallbackSlices.sagittalSeg}
+            expertSlice={fallbackSlices.sagittalExp}
+            worldMm={worldX}
+            showWt={visibility.wt}
+            showTc={visibility.tc}
+            showEt={visibility.et}
+            opacityWt={opacity.wt}
+            opacityTc={opacity.tc}
+            opacityEt={opacity.et}
+            windowLevel={windowLevel}
+            isExpanded={expandedPlane === 'sagittal'}
+            onToggleExpand={() => setExpandedPlane(expandedPlane === 'sagittal' ? null : 'sagittal')}
+            onIndexChange={idx => onUpdateCrosshair({ i: idx })}
+            onSliceClick={(col, row) =>
+              onUpdateCrosshair({ j: col, k: dimZ - 1 - row })
+            }
+          />
+        )}
       </div>
     </div>
   );

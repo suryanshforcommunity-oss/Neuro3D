@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useMemo } from 'react';
+import { Maximize2, Minimize2 } from 'lucide-react';
 
 export type AnatomicalPlane = 'axial' | 'coronal' | 'sagittal';
 
@@ -46,6 +47,8 @@ export interface NeurospaceSlice2DProps {
   maxIndex: number;
   dimCols: number;
   dimRows: number;
+  colSpacing?: number;
+  rowSpacing?: number;
   crosshairPixel: { col: number; row: number };
   volumeSlice: Uint8Array | null;
   segSlice: Uint8Array | null;
@@ -61,6 +64,8 @@ export interface NeurospaceSlice2DProps {
   opacityEt?: number;
   viewMode?: 'predicted' | 'expert' | 'agreement';
   windowLevel?: { window: number; level: number };
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
   onIndexChange: (idx: number) => void;
   onSliceClick: (col: number, row: number) => void;
 }
@@ -71,6 +76,8 @@ export const NeurospaceSlice2D: React.FC<NeurospaceSlice2DProps> = ({
   maxIndex,
   dimCols,
   dimRows,
+  colSpacing = 1.0,
+  rowSpacing = 1.0,
   crosshairPixel,
   volumeSlice,
   segSlice,
@@ -86,12 +93,31 @@ export const NeurospaceSlice2D: React.FC<NeurospaceSlice2DProps> = ({
   opacityEt = 0.85,
   viewMode = 'predicted',
   windowLevel = { window: 255, level: 128 },
+  isExpanded = false,
+  onToggleExpand,
   onIndexChange,
   onSliceClick,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const meta = PLANE_METADATA[plane];
+  const [viewportSize, setViewportSize] = React.useState({ width: 320, height: 320 });
+
+  // Update viewport dimensions on resize
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const updateSize = () => {
+      const rect = container.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        setViewportSize({ width: rect.width, height: rect.height });
+      }
+    };
+    updateSize();
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
 
   // Effective dimensions for display
   const effectiveCols = sliceData?.width || dimCols;
@@ -113,6 +139,23 @@ export const NeurospaceSlice2D: React.FC<NeurospaceSlice2DProps> = ({
 
   const hasMask = sliceData?.has_mask ?? activeVoxelCount > 0;
 
+  // Compute physical aspect ratio and letterbox parameters to prevent anatomical distortion
+  const sx = colSpacing && colSpacing > 0 ? colSpacing : 1.0;
+  const sy = rowSpacing && rowSpacing > 0 ? rowSpacing : 1.0;
+  const aspect = (effectiveCols * sx) / Math.max(1e-4, effectiveRows * sy);
+
+  const displayW = Math.max(1, viewportSize.width);
+  const displayH = Math.max(1, viewportSize.height);
+
+  let renderW = displayW;
+  let renderH = displayW / aspect;
+  if (renderH > displayH) {
+    renderH = displayH;
+    renderW = displayH * aspect;
+  }
+  const renderX = (displayW - renderW) / 2;
+  const renderY = (displayH - renderH) / 2;
+
   // High-DPI canvas rendering
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -123,9 +166,6 @@ export const NeurospaceSlice2D: React.FC<NeurospaceSlice2DProps> = ({
     if (!ctx) return;
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
-    const rect = container.getBoundingClientRect();
-    const displayW = Math.max(1, rect.width || 320);
-    const displayH = Math.max(1, rect.height || 320);
 
     canvas.width = Math.round(displayW * dpr);
     canvas.height = Math.round(displayH * dpr);
@@ -134,20 +174,20 @@ export const NeurospaceSlice2D: React.FC<NeurospaceSlice2DProps> = ({
 
     ctx.save();
     ctx.scale(dpr, dpr);
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
+    // Medical imaging standard: crisp, non-interpolated nearest voxels (prevents blurring)
+    ctx.imageSmoothingEnabled = false;
 
     // Clinical background
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, displayW, displayH);
 
-    // 1. If backend rendered image from genuine BraTS volume is provided, render it
+    // 1. If backend rendered image from genuine BraTS volume is provided, render it letterboxed
     if (sliceData?.image) {
       let isCancelled = false;
       const img = new Image();
       img.onload = () => {
         if (isCancelled) return;
-        ctx.drawImage(img, 0, 0, displayW, displayH);
+        ctx.drawImage(img, renderX, renderY, renderW, renderH);
         ctx.restore();
       };
       img.src = sliceData.image;
@@ -226,7 +266,7 @@ export const NeurospaceSlice2D: React.FC<NeurospaceSlice2DProps> = ({
     const tempCtx = tempCanvas.getContext('2d');
     if (tempCtx) {
       tempCtx.putImageData(imgData, 0, 0);
-      ctx.drawImage(tempCanvas, 0, 0, displayW, displayH);
+      ctx.drawImage(tempCanvas, renderX, renderY, renderW, renderH);
     }
 
     ctx.restore();
@@ -237,6 +277,12 @@ export const NeurospaceSlice2D: React.FC<NeurospaceSlice2DProps> = ({
     expertSlice,
     effectiveCols,
     effectiveRows,
+    renderX,
+    renderY,
+    renderW,
+    renderH,
+    displayW,
+    displayH,
     showWt,
     showTc,
     showEt,
@@ -247,19 +293,22 @@ export const NeurospaceSlice2D: React.FC<NeurospaceSlice2DProps> = ({
     windowLevel,
   ]);
 
-  const handlePointerInteraction = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handlePointerInteraction = (clientX: number, clientY: number) => {
     const container = containerRef.current;
     if (!container || effectiveCols <= 0 || effectiveRows <= 0) return;
 
     const rect = container.getBoundingClientRect();
-    const clientX = e.clientX;
-    const clientY = e.clientY;
+    const clickX = clientX - rect.left;
+    const clickY = clientY - rect.top;
 
-    const normX = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    const normY = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
+    const clampedX = Math.max(renderX, Math.min(renderX + renderW, clickX));
+    const clampedY = Math.max(renderY, Math.min(renderY + renderH, clickY));
 
-    const col = Math.round(normX * (effectiveCols - 1));
-    const row = Math.round(normY * (effectiveRows - 1));
+    const normX = renderW > 0 ? (clampedX - renderX) / renderW : 0.5;
+    const normY = renderH > 0 ? (clampedY - renderY) / renderH : 0.5;
+
+    const col = Math.max(0, Math.min(effectiveCols - 1, Math.round(normX * (effectiveCols - 1))));
+    const row = Math.max(0, Math.min(effectiveRows - 1, Math.round(normY * (effectiveRows - 1))));
 
     onSliceClick(col, row);
   };
@@ -273,9 +322,11 @@ export const NeurospaceSlice2D: React.FC<NeurospaceSlice2DProps> = ({
     }
   };
 
-  // Convert crosshair (col, row) to percentages
-  const crosshairXPercent = effectiveCols > 1 ? (crosshairPixel.col / (effectiveCols - 1)) * 100 : 50;
-  const crosshairYPercent = effectiveRows > 1 ? (crosshairPixel.row / (effectiveRows - 1)) * 100 : 50;
+  // Convert crosshair (col, row) to pixel positions on container matching letterboxed viewport
+  const crosshairPixelX =
+    renderX + (effectiveCols > 1 ? (crosshairPixel.col / (effectiveCols - 1)) * renderW : renderW / 2);
+  const crosshairPixelY =
+    renderY + (effectiveRows > 1 ? (crosshairPixel.row / (effectiveRows - 1)) * renderH : renderH / 2);
 
   const resolvedWorldMm = sliceData?.world_coord_mm !== undefined ? sliceData.world_coord_mm : worldMm;
   const worldStr =
@@ -295,25 +346,37 @@ export const NeurospaceSlice2D: React.FC<NeurospaceSlice2DProps> = ({
           {worldStr && <div className="slice-coord-text">{worldStr}</div>}
         </div>
 
-        <div className="slice-index-pill">
-          {currentIndex + 1} / {maxIndex + 1}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="slice-index-pill">
+            {currentIndex + 1} / {maxIndex + 1}
+          </div>
+          {onToggleExpand && (
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                onToggleExpand();
+              }}
+              className="p-1 rounded text-slate-400 hover:text-sky-400 hover:bg-slate-800 transition cursor-pointer"
+              title={isExpanded ? 'Restore to 3-Plane View' : 'Maximize this Viewport'}
+            >
+              {isExpanded ? (
+                <Minimize2 className="w-3.5 h-3.5" />
+              ) : (
+                <Maximize2 className="w-3.5 h-3.5" />
+              )}
+            </button>
+          )}
         </div>
       </div>
 
       {/* Main Interactive Viewport */}
       <div
         ref={containerRef}
-        className="slice-viewport"
+        className="slice-viewport relative overflow-hidden"
         onMouseDown={e => {
-          handlePointerInteraction(e);
+          handlePointerInteraction(e.clientX, e.clientY);
           const handleMove = (moveEvent: MouseEvent) => {
-            if (!containerRef.current || effectiveCols <= 0 || effectiveRows <= 0) return;
-            const rect = containerRef.current.getBoundingClientRect();
-            const normX = Math.max(0, Math.min(1, (moveEvent.clientX - rect.left) / rect.width));
-            const normY = Math.max(0, Math.min(1, (moveEvent.clientY - rect.top) / rect.height));
-            const col = Math.round(normX * (effectiveCols - 1));
-            const row = Math.round(normY * (effectiveRows - 1));
-            onSliceClick(col, row);
+            handlePointerInteraction(moveEvent.clientX, moveEvent.clientY);
           };
           const handleUp = () => {
             window.removeEventListener('mousemove', handleMove);
@@ -332,13 +395,13 @@ export const NeurospaceSlice2D: React.FC<NeurospaceSlice2DProps> = ({
         <span className="anatomical-label left">{meta.labels.left}</span>
         <span className="anatomical-label right">{meta.labels.right}</span>
 
-        {/* Synchronized Full-Bleed Crosshair Overlay (Covers 100% of Image) */}
+        {/* Synchronized Crosshair Overlay */}
         <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
-          {/* Vertical Crosshair Line: Spans 100% Full Top-to-Bottom Height */}
+          {/* Vertical Crosshair Line */}
           <div
             className="absolute top-0 bottom-0 pointer-events-none"
             style={{
-              left: `${crosshairXPercent}%`,
+              left: `${crosshairPixelX}px`,
               width: '1px',
               borderLeft: '1.5px dashed rgba(56, 189, 248, 0.85)',
               transform: 'translateX(-50%)',
@@ -346,11 +409,11 @@ export const NeurospaceSlice2D: React.FC<NeurospaceSlice2DProps> = ({
             }}
           />
 
-          {/* Horizontal Crosshair Line: Spans 100% Full Left-to-Right Width */}
+          {/* Horizontal Crosshair Line */}
           <div
             className="absolute left-0 right-0 pointer-events-none"
             style={{
-              top: `${crosshairYPercent}%`,
+              top: `${crosshairPixelY}px`,
               height: '1px',
               borderTop: '1.5px dashed rgba(56, 189, 248, 0.85)',
               transform: 'translateY(-50%)',
@@ -362,8 +425,8 @@ export const NeurospaceSlice2D: React.FC<NeurospaceSlice2DProps> = ({
           <div
             className="absolute pointer-events-none rounded-full flex items-center justify-center"
             style={{
-              left: `${crosshairXPercent}%`,
-              top: `${crosshairYPercent}%`,
+              left: `${crosshairPixelX}px`,
+              top: `${crosshairPixelY}px`,
               width: '12px',
               height: '12px',
               transform: 'translate(-50%, -50%)',
@@ -375,6 +438,14 @@ export const NeurospaceSlice2D: React.FC<NeurospaceSlice2DProps> = ({
             <div className="w-1 h-1 rounded-full bg-white" />
           </div>
         </div>
+
+        {/* Informational overlay when sequence volume is not loaded */}
+        {!volumeSlice && !sliceData?.image && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 bg-slate-950/80 text-slate-400 select-none pointer-events-none z-20">
+            <div className="text-xs font-mono font-bold text-slate-300">Modality Not Uploaded</div>
+            <div className="text-[11px] text-slate-500 mt-1">Upload {meta.title} Sequence</div>
+          </div>
+        )}
 
         {/* Subregion Indicator Badge */}
         {hasMask && (

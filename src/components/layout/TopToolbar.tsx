@@ -15,12 +15,14 @@ import {
   HeartPulse,
 } from 'lucide-react';
 import { Badge } from '../common/Badge';
-import { MriSequenceType, VoxelCoordinate, WorldCoordinate } from '../../types';
+import { MriSequenceType, VoxelCoordinate, WorldCoordinate, DatasetState, SegmentationSource } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 
 interface TopToolbarProps {
   studyId?: string;
   isDemoMode: boolean;
+  datasetState?: DatasetState;
+  segmentationSource?: SegmentationSource;
   backendStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
   backendUrl: string;
   onCheckBackend: () => void;
@@ -41,6 +43,8 @@ interface TopToolbarProps {
 export const TopToolbar: React.FC<TopToolbarProps> = ({
   studyId = 'BRATS_2023_DEMO_042',
   isDemoMode,
+  datasetState = 'DEMO_ACTIVE',
+  segmentationSource = 'demo',
   backendStatus,
   backendUrl,
   onCheckBackend,
@@ -103,15 +107,61 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         </div>
 
         {/* Data mode badge */}
-        {isDemoMode ? (
+        {!studyId || studyId === 'No Case Loaded' || datasetState === 'NO_DATASET' ? (
+          <Badge variant="slate" size="sm" className="hidden lg:inline-flex flex-shrink-0 whitespace-nowrap">
+            <Database className="w-3 h-3 text-slate-500" />
+            NO DATASET LOADED
+          </Badge>
+        ) : isDemoMode ? (
           <Badge variant="amber" size="sm" className="hidden lg:inline-flex flex-shrink-0 whitespace-nowrap">
             <Database className="w-3 h-3 text-amber-600" />
-            MULTI-PATIENT DEMO
+            DEMO DATASET ACTIVE
           </Badge>
         ) : (
           <Badge variant="cyan" size="sm" className="hidden lg:inline-flex flex-shrink-0 whitespace-nowrap">
             <Database className="w-3 h-3 text-sky-600" />
-            RESEARCH SCAN
+            REAL MRI DATASET ACTIVE
+          </Badge>
+        )}
+
+        {/* Dedicated Segmentation Status Badge (Strict Dataset State Machine) */}
+        {datasetState === 'DEMO_ACTIVE' && (
+          <Badge variant="amber" size="sm" className="hidden xl:inline-flex flex-shrink-0 whitespace-nowrap">
+            <Sparkles className="w-3 h-3 text-amber-600" />
+            SIMULATED DEMO SEGMENTATION
+          </Badge>
+        )}
+        {datasetState === 'INFERENCE_RUNNING' && (
+          <Badge variant="cyan" size="sm" className="hidden xl:inline-flex flex-shrink-0 whitespace-nowrap animate-pulse">
+            <span className="animate-spin text-sky-600">⟳</span>
+            MONAI INFERENCE RUNNING
+          </Badge>
+        )}
+        {datasetState === 'INFERENCE_SUCCESS' && (
+          <Badge variant="emerald" size="sm" className="hidden xl:inline-flex flex-shrink-0 whitespace-nowrap">
+            <span className="text-emerald-600 font-bold">✓</span>
+            MODEL PREDICTION ACTIVE
+          </Badge>
+        )}
+        {datasetState === 'INFERENCE_FAILED' && (
+          <Badge variant="rose" size="sm" className="hidden xl:inline-flex flex-shrink-0 whitespace-nowrap">
+            <span className="text-rose-600 font-bold">⚠</span>
+            INFERENCE FAILED
+          </Badge>
+        )}
+        {datasetState === 'WAITING_FOR_MODALITIES' && (
+          <Badge variant="slate" size="sm" className="hidden xl:inline-flex flex-shrink-0 whitespace-nowrap">
+            AWAITING 4 MODALITIES
+          </Badge>
+        )}
+        {datasetState === 'MRI_READY' && (
+          <Badge variant="violet" size="sm" className="hidden xl:inline-flex flex-shrink-0 whitespace-nowrap">
+            READY FOR SEGMENTATION
+          </Badge>
+        )}
+        {datasetState === 'UNSUPPORTED_FILE' && (
+          <Badge variant="rose" size="sm" className="hidden xl:inline-flex flex-shrink-0 whitespace-nowrap">
+            UNSUPPORTED FILE
           </Badge>
         )}
 

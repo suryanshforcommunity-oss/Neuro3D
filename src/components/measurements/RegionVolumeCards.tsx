@@ -8,7 +8,7 @@ import {
   TrendingDown,
   TrendingUp,
 } from 'lucide-react';
-import { TumourLabelCounts, VoxelSpacing, RegionVolume } from '../../types';
+import { TumourLabelCounts, VoxelSpacing, RegionVolume, SegmentationSource, DatasetState } from '../../types';
 import { buildRegionVolumeSummaries } from '../../utils/volume';
 import { VolumeDetailsModal } from './VolumeDetailsModal';
 
@@ -17,6 +17,9 @@ interface RegionVolumeCardsProps {
   spacing: VoxelSpacing;
   expertCounts?: TumourLabelCounts;
   isDemoMode: boolean;
+  hasSegmentation?: boolean;
+  segmentationSource?: SegmentationSource;
+  datasetState?: DatasetState;
 }
 
 export const RegionVolumeCards: React.FC<RegionVolumeCardsProps> = ({
@@ -24,6 +27,9 @@ export const RegionVolumeCards: React.FC<RegionVolumeCardsProps> = ({
   spacing,
   expertCounts,
   isDemoMode,
+  hasSegmentation = true,
+  segmentationSource = 'demo',
+  datasetState,
 }) => {
   const [showDetails, setShowDetails] = useState<boolean>(false);
 
@@ -76,19 +82,61 @@ export const RegionVolumeCards: React.FC<RegionVolumeCardsProps> = ({
 
               {/* Main Volume readout */}
               <div className="my-2.5">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-3xl font-black font-mono tracking-tight text-slate-950">
-                    {item.volumeMl.toFixed(2)}
-                  </span>
-                  <span className="text-xs font-mono font-bold text-slate-700">mL (cm³)</span>
-                </div>
-                <div className="text-xs text-slate-700 font-mono font-semibold mt-0.5">
-                  {item.voxelCount.toLocaleString()} 3D pixels (voxels)
-                </div>
+                {!hasSegmentation ? (
+                  <div>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-2xl font-bold font-mono tracking-tight text-slate-400">
+                        Not Available
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-500 font-mono mt-0.5">
+                      Segmentation not executed yet
+                    </div>
+                  </div>
+                ) : item.voxelCount === 0 ? (
+                  <div>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-3xl font-black font-mono tracking-tight text-slate-950">
+                        0.00
+                      </span>
+                      <span className="text-xs font-mono font-bold text-slate-700">mL (cm³)</span>
+                    </div>
+                    <div className="text-xs text-emerald-700 font-mono font-semibold mt-0.5 flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 inline flex-shrink-0" />
+                      <span>0 voxels (Verified: No Tumour)</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-3xl font-black font-mono tracking-tight text-slate-950">
+                        {item.volumeMl.toFixed(2)}
+                      </span>
+                      <span className="text-xs font-mono font-bold text-slate-700">mL (cm³)</span>
+                    </div>
+                    <div className="text-xs text-slate-700 font-mono font-semibold mt-0.5">
+                      {item.voxelCount.toLocaleString()} 3D pixels (voxels)
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Provenance badge */}
+              <div className="text-[10px] font-mono text-slate-500 pt-1.5 border-t border-slate-100 flex items-center justify-between">
+                <span>Source:</span>
+                <span className="font-semibold text-slate-700">
+                  {isDemoMode
+                    ? 'Simulated demo segmentation'
+                    : hasSegmentation
+                    ? segmentationSource === 'model'
+                      ? 'MONAI SegResNet inference'
+                      : 'Expert ground truth'
+                    : 'Awaiting inference'}
+                </span>
               </div>
 
               {/* Expert mask comparison if available */}
-              {hasExpert ? (
+              {hasExpert && hasSegmentation ? (
                 <div className="mt-3 pt-2.5 border-t border-slate-200 space-y-1.5 text-xs font-mono">
                   <div className="flex justify-between text-slate-700 font-medium">
                     <span>Doctor's Hand-Drawn Size:</span>

@@ -1,3 +1,8 @@
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
 # Logs
 logs
 *.log
@@ -7,6 +12,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Node & Build Outputs
 node_modules
 dist
 dist-ssr
@@ -42,17 +48,26 @@ models/**/*.ts
 models/**/*.pth
 models/**/*.bin
 models/**/*.onnx
-models/*.pt
-models/*.ts
 models/*.pth
 models/*.bin
 models/*.onnx
+# Whitelist official BraTS SegResNet bundle weights (18.8 MB) so Render has model weights
+!models/brats_mri_segmentation.pt
+
+# Storage & Temporary Outputs
 storage/studies/*
 !storage/studies/.gitkeep
 tmp/
 scratch/
+
+# Medical Scans & Patient Folders (Strictly excluded for HIPAA & privacy)
 *.nii.gz
 *.nii
-/Wireframe_brain_rotating_with_tu*.mp4
-/Medical_AI_logo_design_2K_*.jpeg
+p[0-9]*/
+p[0-9]*
+
+# Media, Large Screen Recordings, and Documentation Drafts
+*.mp4
+*.docx
+Medical_AI_logo_design_2K_*.jpeg
 Screenshot *.png

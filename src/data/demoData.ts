@@ -249,7 +249,14 @@ const EXAMINATION_CONFIGS: Record<string, {
   wtDice: number;
   tcDice: number;
   etDice: number;
+  wtSensitivity?: number;
+  tcSensitivity?: number;
+  etSensitivity?: number;
+  wtSpecificity?: number;
+  tcSpecificity?: number;
+  etSpecificity?: number;
 }> = {
+  // Reading 1 (Baseline examination): Realistic initial segmentation
   study_exam_01: {
     radX: 14.0,
     radY: 16.0,
@@ -257,10 +264,17 @@ const EXAMINATION_CONFIGS: Record<string, {
     edemaFactor: 1.15,
     coreFactor: 0.65,
     ncrFactor: 0.35,
-    wtDice: 0.9818,
-    tcDice: 0.9540,
-    etDice: 0.9412,
+    wtDice: 0.8520,
+    tcDice: 0.7980,
+    etDice: 0.7640,
+    wtSensitivity: 0.8610,
+    tcSensitivity: 0.8120,
+    etSensitivity: 0.7780,
+    wtSpecificity: 0.9972,
+    tcSpecificity: 0.9984,
+    etSpecificity: 0.9991,
   },
+  // Reading 2 (Follow-up scan 2): Increased accuracy with longitudinal calibration
   study_exam_02: {
     radX: 16.5,
     radY: 18.8,
@@ -268,10 +282,17 @@ const EXAMINATION_CONFIGS: Record<string, {
     edemaFactor: 1.15,
     coreFactor: 0.68,
     ncrFactor: 0.38,
-    wtDice: 0.9813,
-    tcDice: 0.9521,
-    etDice: 0.9388,
+    wtDice: 0.8840,
+    tcDice: 0.8350,
+    etDice: 0.8060,
+    wtSensitivity: 0.8920,
+    tcSensitivity: 0.8460,
+    etSensitivity: 0.8180,
+    wtSpecificity: 0.9978,
+    tcSpecificity: 0.9988,
+    etSpecificity: 0.9994,
   },
+  // Reading 3 (Follow-up scan 3): Continued progressive improvement
   study_exam_03: {
     radX: 18.8,
     radY: 21.2,
@@ -279,10 +300,17 @@ const EXAMINATION_CONFIGS: Record<string, {
     edemaFactor: 1.16,
     coreFactor: 0.70,
     ncrFactor: 0.40,
-    wtDice: 0.9806,
-    tcDice: 0.9485,
-    etDice: 0.9310,
+    wtDice: 0.9130,
+    tcDice: 0.8690,
+    etDice: 0.8420,
+    wtSensitivity: 0.9180,
+    tcSensitivity: 0.8780,
+    etSensitivity: 0.8540,
+    wtSpecificity: 0.9984,
+    tcSpecificity: 0.9991,
+    etSpecificity: 0.9996,
   },
+  // Reading 4 (Follow-up scan 4): Peak fine-tuned accuracy within realistic clinical bounds (<95%)
   study_exam_04: {
     radX: 12.2,
     radY: 14.0,
@@ -290,9 +318,15 @@ const EXAMINATION_CONFIGS: Record<string, {
     edemaFactor: 1.14,
     coreFactor: 0.62,
     ncrFactor: 0.32,
-    wtDice: 0.9800,
-    tcDice: 0.9510,
-    etDice: 0.9345,
+    wtDice: 0.9320,
+    tcDice: 0.8910,
+    etDice: 0.8680,
+    wtSensitivity: 0.9360,
+    tcSensitivity: 0.9020,
+    etSensitivity: 0.8790,
+    wtSpecificity: 0.9988,
+    tcSpecificity: 0.9994,
+    etSpecificity: 0.9998,
   },
 };
 
@@ -322,15 +356,15 @@ export const DEMO_PROVENANCE: StudyProvenance = {
   },
   metrics: {
     hasExpertMask: true,
-    wtDice: 0.9818,
-    tcDice: 0.9540,
-    etDice: 0.9412,
-    wtSensitivity: 0.9840,
-    tcSensitivity: 0.9580,
-    etSensitivity: 0.9450,
-    wtSpecificity: 0.9991,
-    tcSpecificity: 0.9994,
-    etSpecificity: 0.9998,
+    wtDice: 0.8520,
+    tcDice: 0.7980,
+    etDice: 0.7640,
+    wtSensitivity: 0.8610,
+    tcSensitivity: 0.8120,
+    etSensitivity: 0.7780,
+    wtSpecificity: 0.9972,
+    tcSpecificity: 0.9984,
+    etSpecificity: 0.9991,
   },
   disclaimer:
     'Research and teaching prototype only. Not for clinical diagnosis or treatment decisions. Model outputs are experimental and require independent expert review.',
@@ -569,12 +603,12 @@ export function getDemoProvenanceForSlot(
       wtDice: cfg.wtDice,
       tcDice: cfg.tcDice,
       etDice: cfg.etDice,
-      wtSensitivity: 0.9820,
-      tcSensitivity: 0.9540,
-      etSensitivity: 0.9410,
-      wtSpecificity: 0.9991,
-      tcSpecificity: 0.9994,
-      etSpecificity: 0.9998,
+      wtSensitivity: cfg.wtSensitivity ?? 0.8610,
+      tcSensitivity: cfg.tcSensitivity ?? 0.8120,
+      etSensitivity: cfg.etSensitivity ?? 0.7780,
+      wtSpecificity: cfg.wtSpecificity ?? 0.9972,
+      tcSpecificity: cfg.tcSpecificity ?? 0.9984,
+      etSpecificity: cfg.etSpecificity ?? 0.9991,
     },
     disclaimer:
       'Research and teaching prototype only. Not for clinical diagnosis or treatment decisions. Model outputs are experimental and require independent expert review.',

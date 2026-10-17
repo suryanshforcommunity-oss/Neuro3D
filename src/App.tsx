@@ -93,6 +93,8 @@ const AppContent: React.FC = () => {
         <TopToolbar
           studyId={state.provenance?.studyId || 'No Case Loaded'}
           isDemoMode={state.isDemoMode}
+          datasetState={state.datasetState}
+          segmentationSource={state.segmentationSource}
           backendStatus={state.backendStatus}
           backendUrl={state.backendUrl}
           onCheckBackend={state.checkBackendHealth}
@@ -141,6 +143,12 @@ const AppContent: React.FC = () => {
               windowLevel={state.windowLevel}
               clipping={state.clippingPlanes}
               isDemoMode={state.isDemoMode}
+              datasetState={state.datasetState}
+              segmentationSource={state.segmentationSource}
+              inferenceProgress={state.inferenceProgress}
+              inferenceCurrentStep={state.inferenceCurrentStep}
+              inferenceError={state.inferenceError}
+              onRunSegmentation={state.runSegmentation}
               onToggleVisibility={key =>
                 state.setRegionVisibility(prev => ({ ...prev, [key]: !prev[key] }))
               }

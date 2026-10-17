@@ -164,3 +164,35 @@ export interface ClippingPlanes {
   sagittal: number;
   enabled: boolean;
 }
+
+export type DatasetState =
+  | 'NO_DATASET'
+  | 'DEMO_ACTIVE'
+  | 'MRI_LOADING'
+  | 'MRI_READY'
+  | 'WAITING_FOR_MODALITIES'
+  | 'INFERENCE_RUNNING'
+  | 'INFERENCE_SUCCESS'
+  | 'INFERENCE_FAILED'
+  | 'SEGMENTATION_UNAVAILABLE'
+  | 'UNSUPPORTED_FILE';
+
+export type SegmentationSource = 'demo' | 'model' | 'expert' | 'none';
+
+export interface ActiveDataset {
+  datasetId: string;
+  source: 'demo' | 'real';
+  datasetState: DatasetState;
+  segmentationSource: SegmentationSource;
+  loadedSequences: MriSequenceType[];
+  activeSequence: MriSequenceType;
+  dimensions: VolumeDimensions;
+  spacing: VoxelSpacing;
+  affine: AffineMatrix;
+  currentVoxel: VoxelCoordinate;
+  hasSegmentation: boolean;
+  inferenceError?: string | null;
+  inferenceProgress?: number;
+  inferenceCurrentStep?: string;
+  voxelVolumeMl: number;
+}

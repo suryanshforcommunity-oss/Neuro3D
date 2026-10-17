@@ -390,3 +390,158 @@ export function buildNeurospaceRegionMeshes(
     agreementRegions,
   };
 }
+
+/**
+ * Ensures all active tumor subregions (WT, TC, ET, TP, FP, FN) are strictly positioned inside the brain parenchyma.
+ * Applies an identical uniform translation and scale across all active subregions to preserve the exact relative
+ * boundaries, morphology, and nesting of tumor compartments.
+ * If the tumor is already safely within the brain mantle, no change is applied.
+ */
+export function ensureTumorInsideBrain(
+  brain: SurfaceMesh | undefined,
+  regions: NeurospaceRegionSet
+): void {
+  if (!brain || !brain.vertices || brain.vertices.length === 0) return;
+
+  const tumorKeys: (keyof NeurospaceRegionSet)[] = ['WT', 'TC', 'ET', 'TP', 'FP', 'FN'];
+  const activeMeshes: SurfaceMesh[] = [];
+
+  for (const key of tumorKeys) {
+    const mesh = regions[key];
+    if (mesh && mesh.vertices && mesh.vertices.length > 0) {
+      activeMeshes.push(mesh);
+    }
+  }
+
+  if (activeMeshes.length === 0) return;
+
+  // 1. Compute combined bounding envelope of active tumor subregions
+  let tMinX = Infinity, tMinY = Infinity, tMinZ = Infinity;
+  let tMaxX = -Infinity, tMaxY = -Infinity, tMaxZ = -Infinity;
+
+  for (const m of activeMeshes) {
+    for (const [vx, vy, vz] of m.vertices) {
+      if (vx < tMinX) tMinX = vx;
+      if (vy < tMinY) tMinY = vy;
+      if (vz < tMinZ) tMinZ = vz;
+      if (vx > tMaxX) tMaxX = vx;
+      if (vy > tMaxY) tMaxY = vy;
+      if (vz > tMaxZ) tMaxZ = vz;
+    }
+  }
+
+  // 2. Compute brain bounding envelope
+  let bMinX = Infinity, bMinY = Infinity, bMinZ = Infinity;
+  let bMaxX = -Infinity, bMaxY = -Infinity, bMaxZ = -Infinity;
+
+  for (const [bx, by, bz] of brain.vertices) {
+    if (bx < bMinX) bMinX = bx;
+    if (by < bMinY) bMinY = by;
+    if (bz < bMinZ) bMinZ = bz;
+    if (bx > bMaxX) bMaxX = bx;
+    if (by > bMaxY) bMaxY = by;
+    if (bz > bMaxZ) bMaxZ = bz;
+  }
+
+  const bSpanX = bMaxX - bMinX;
+  const bSpanY = bMaxY - bMinY;
+  const bSpanZ = bMaxZ - bMinZ;
+
+  // Parenchyma safe bounds: 12% cortical margin so tumor never breaches outer cortex
+  const margin = 0.12;
+  const safeMinX = bMinX + bSpanX * margin;
+  const safeMaxX = bMaxX - bSpanX * margin;
+  const safeMinY = bMinY + bSpanY * margin;
+  const safeMaxY = bMaxY - bSpanY * margin;
+  const safeMinZ = bMinZ + bSpanZ * margin;
+  const safeMaxZ = bMaxZ - bSpanZ * margin;
+
+  // Check if tumor already sits comfortably inside brain parenchyma
+  const isInside =
+    tMinX >= safeMinX &&
+    tMaxX <= safeMaxX &&
+    tMinY >= safeMinY &&
+    tMaxY <= safeMaxY &&
+    tMinZ >= safeMinZ &&
+    tMaxZ <= safeMaxZ;
+
+  if (isInside) {
+    return;
+  }
+
+  // 3. Compute uniform scaling factor if tumor span exceeds allowable safe span
+  const tSpanX = Math.max(1, tMaxX - tMinX);
+  const tSpanY = Math.max(1, tMaxY - tMinY);
+  const tSpanZ = Math.max(1, tMaxZ - tMinZ);
+
+  const safeSpanX = safeMaxX - safeMinX;
+  const safeSpanY = safeMaxY - safeMinY;
+  const safeSpanZ = safeMaxZ - safeMinZ;
+
+  const scale = Math.min(
+    1.0,
+    safeSpanX / tSpanX,
+    safeSpanY / tSpanY,
+    safeSpanZ / tSpanZ
+  ) * 0.90;
+
+  // 4. Compute target center for tumor
+  const tCenterX = (tMinX + tMaxX) / 2;
+  const tCenterY = (tMinY + tMaxY) / 2;
+  const tCenterZ = (tMinZ + tMaxZ) / 2;
+
+  const safeCenterX = (safeMinX + safeMaxX) / 2;
+  const safeCenterY = (safeMinY + safeMaxY) / 2;
+  const safeCenterZ = (safeMinZ + safeMaxZ) / 2;
+
+  const scaledHalfX = (tSpanX * scale) / 2;
+  const scaledHalfY = (tSpanY * scale) / 2;
+  const scaledHalfZ = (tSpanZ * scale) / 2;
+
+  let targetX = safeCenterX;
+  let targetY = safeCenterY + safeSpanY * 0.10;
+  let targetZ = safeCenterZ;
+
+  // Preserve relative anatomical hemisphere if distinct
+  if (Math.abs(tCenterX) > 5) {
+    const relSignX = Math.sign(tCenterX);
+    targetX = safeCenterX + relSignX * (safeSpanX * 0.22);
+  }
+
+  targetX = Math.max(safeMinX + scaledHalfX, Math.min(safeMaxX - scaledHalfX, targetX));
+  targetY = Math.max(safeMinY + scaledHalfY, Math.min(safeMaxY - scaledHalfY, targetY));
+  targetZ = Math.max(safeMinZ + scaledHalfZ, Math.min(safeMaxZ - scaledHalfZ, targetZ));
+
+  // 5. Apply identical uniform transformation to all active tumor subregions
+  for (const m of activeMeshes) {
+    for (let i = 0; i < m.vertices.length; i++) {
+      const vx = m.vertices[i][0];
+      const vy = m.vertices[i][1];
+      const vz = m.vertices[i][2];
+
+      const nx = targetX + (vx - tCenterX) * scale;
+      const ny = targetY + (vy - tCenterY) * scale;
+      const nz = targetZ + (vz - tCenterZ) * scale;
+
+      m.vertices[i][0] = Number(nx.toFixed(2));
+      m.vertices[i][1] = Number(ny.toFixed(2));
+      m.vertices[i][2] = Number(nz.toFixed(2));
+    }
+
+    let minX = Infinity, minY = Infinity, minZ = Infinity;
+    let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+    for (const [x, y, z] of m.vertices) {
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      if (z < minZ) minZ = z;
+      if (x > maxX) maxX = x;
+      if (y > maxY) maxY = y;
+      if (z > maxZ) maxZ = z;
+    }
+    m.bbox = {
+      min: [Number(minX.toFixed(2)), Number(minY.toFixed(2)), Number(minZ.toFixed(2))],
+      max: [Number(maxX.toFixed(2)), Number(maxY.toFixed(2)), Number(maxZ.toFixed(2))],
+    };
+  }
+}
+

@@ -4,7 +4,7 @@ import { NeurospaceViewer3D } from '../components/viewer/NeurospaceViewer3D';
 import { OrthogonalSliceView } from '../components/slices/OrthogonalSliceView';
 import { NeurospaceMultiplanarView } from '../components/slices/NeurospaceMultiplanarView';
 import { RegionVolumeCards } from '../components/measurements/RegionVolumeCards';
-import { buildNeurospaceRegionMeshes, NeurospaceRegionSet } from '../utils/marchingCubes';
+import { buildNeurospaceRegionMeshes, ensureTumorInsideBrain, NeurospaceRegionSet } from '../utils/marchingCubes';
 import {
   VoxelCoordinate,
   WorldCoordinate,
@@ -17,8 +17,10 @@ import {
   ClippingPlanes,
   TumourLabelCounts,
   MriSequenceType,
+  DatasetState,
+  SegmentationSource,
 } from '../types';
-import { Box, Layers } from 'lucide-react';
+import { Box, Layers, Zap, AlertCircle, CheckCircle2, RefreshCw, AlertTriangle } from 'lucide-react';
 
 interface WorkspacePageProps {
   crosshair: VoxelCoordinate;
@@ -37,6 +39,12 @@ interface WorkspacePageProps {
   windowLevel: SliceWindowLevel;
   clipping: ClippingPlanes;
   isDemoMode: boolean;
+  datasetState?: DatasetState;
+  segmentationSource?: SegmentationSource;
+  inferenceProgress?: number;
+  inferenceCurrentStep?: string;
+  inferenceError?: string | null;
+  onRunSegmentation?: () => void;
   onToggleVisibility: (key: keyof RegionVisibility) => void;
   onChangeOpacity: (key: keyof RegionOpacity, value: number) => void;
   onChangeWindowLevel: (wl: SliceWindowLevel) => void;
@@ -63,6 +71,12 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
   windowLevel,
   clipping,
   isDemoMode,
+  datasetState = 'DEMO_ACTIVE',
+  segmentationSource = 'demo',
+  inferenceProgress = 0,
+  inferenceCurrentStep = '',
+  inferenceError = null,
+  onRunSegmentation,
   onToggleVisibility,
   onChangeOpacity,
   onChangeWindowLevel,
@@ -108,14 +122,12 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
       affine
     );
 
-    // When authentic high-resolution anatomical cortical mesh is loaded, use it for realistic brain anatomy
-    if (anatomicalDemoMeshes?.brain) {
-      computed.predictedRegions.brain = anatomicalDemoMeshes.brain;
-      computed.expertRegions.brain = anatomicalDemoMeshes.brain;
-      computed.agreementRegions.brain = anatomicalDemoMeshes.brain;
-
-      // In demo mode or when no live patient segmentation is uploaded, use authentic clinical tumor meshes
-      if (isDemoMode || !segmentationMask || segmentationMask.length === 0) {
+    // 1. In DEMO MODE: Use authentic clinical demo meshes from the precomputed demo examination
+    if (isDemoMode) {
+      if (anatomicalDemoMeshes?.brain) {
+        computed.predictedRegions.brain = anatomicalDemoMeshes.brain;
+        computed.expertRegions.brain = anatomicalDemoMeshes.brain;
+        computed.agreementRegions.brain = anatomicalDemoMeshes.brain;
         if (anatomicalDemoMeshes.WT) computed.predictedRegions.WT = anatomicalDemoMeshes.WT;
         if (anatomicalDemoMeshes.TC) computed.predictedRegions.TC = anatomicalDemoMeshes.TC;
         if (anatomicalDemoMeshes.ET) computed.predictedRegions.ET = anatomicalDemoMeshes.ET;
@@ -123,8 +135,21 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
         if (anatomicalDemoMeshes.TC) computed.expertRegions.TC = anatomicalDemoMeshes.TC;
         if (anatomicalDemoMeshes.ET) computed.expertRegions.ET = anatomicalDemoMeshes.ET;
       }
+      return computed;
     }
 
+    // 2. In REAL MRI MODE:
+    // Pure patient-derived segmentation surfaces via Marching Cubes using the patient's affine matrix.
+    // Demo tumor geometry is NEVER leaked into real MRI mode.
+    // If no segmentationMask is present, predicted WT/TC/ET meshes are completely empty.
+    // Reference cranial frame is provided for spatial orientation, but explicitly labeled as reference.
+    if (anatomicalDemoMeshes?.brain) {
+      computed.predictedRegions.brain = anatomicalDemoMeshes.brain;
+      computed.expertRegions.brain = anatomicalDemoMeshes.brain;
+      computed.agreementRegions.brain = anatomicalDemoMeshes.brain;
+    }
+
+    // Preserve exact physical millimeter coordinates from affine matrix (never warp or shift real tumor)
     return computed;
   }, [segmentationMask, expertMask, activeVolume, dimensions, affine, anatomicalDemoMeshes, isDemoMode]);
 
@@ -144,6 +169,96 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-y-auto p-4 gap-4 bg-slate-100/60 font-sans">
+      {/* Real MRI AI Segmentation Control Banner (displayed when not in simulated demo mode) */}
+      {!isDemoMode && (
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-xs flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            {datasetState === 'INFERENCE_RUNNING' ? (
+              <div className="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center text-sky-600 flex-shrink-0 animate-spin">
+                <RefreshCw className="w-5 h-5" />
+              </div>
+            ) : datasetState === 'INFERENCE_SUCCESS' ? (
+              <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 flex-shrink-0">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+            ) : datasetState === 'INFERENCE_FAILED' ? (
+              <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center text-rose-600 flex-shrink-0">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+            ) : datasetState === 'WAITING_FOR_MODALITIES' ? (
+              <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 flex-shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+            ) : (
+              <div className="w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 flex-shrink-0">
+                <Zap className="w-5 h-5" />
+              </div>
+            )}
+
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-xs uppercase tracking-wide text-slate-900">
+                  {datasetState === 'INFERENCE_RUNNING'
+                    ? 'MONAI SegResNet Inference In Progress'
+                    : datasetState === 'INFERENCE_SUCCESS'
+                    ? 'AI Model Segmentation Active'
+                    : datasetState === 'INFERENCE_FAILED'
+                    ? 'Segmentation Inference Failed'
+                    : datasetState === 'WAITING_FOR_MODALITIES'
+                    ? 'Awaiting All 4 MRI Sequences'
+                    : 'MRI Sequences Ready for Segmentation'}
+                </span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-semibold border border-slate-200">
+                  {datasetState}
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 mt-0.5 truncate">
+                {datasetState === 'INFERENCE_RUNNING'
+                  ? `${inferenceCurrentStep || 'Running neural network inference...'} (${inferenceProgress}%)`
+                  : datasetState === 'INFERENCE_SUCCESS'
+                  ? `Whole Tumour: ${labelCounts.wtCount} voxels | TC: ${labelCounts.tcCount} voxels | ET: ${labelCounts.etCount} voxels (Source: MONAI SegResNet)`
+                  : datasetState === 'INFERENCE_FAILED'
+                  ? inferenceError || 'Inference encountered an error during preprocessing or sliding window execution.'
+                  : datasetState === 'WAITING_FOR_MODALITIES'
+                  ? 'The MONAI SegResNet BraTS model requires 4 co-registered sequences (T1, T1-Gd, T2, FLAIR). You can view available sequences or upload the remaining sequences.'
+                  : 'All 4 multimodal sequences are loaded and validated. Click to execute sliding-window segmentation.'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {datasetState === 'MRI_READY' && onRunSegmentation && (
+              <button
+                onClick={onRunSegmentation}
+                className="flex items-center gap-2 px-3.5 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer"
+              >
+                <Zap className="w-4 h-4" />
+                <span>Run MONAI SegResNet Segmentation</span>
+              </button>
+            )}
+
+            {datasetState === 'INFERENCE_FAILED' && onRunSegmentation && (
+              <button
+                onClick={onRunSegmentation}
+                className="flex items-center gap-2 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Retry Inference</span>
+              </button>
+            )}
+
+            {datasetState === 'INFERENCE_RUNNING' && (
+              <div className="w-32 bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
+                <div
+                  className="bg-sky-500 h-full transition-all duration-300"
+                  style={{ width: `${Math.max(5, inferenceProgress)}%` }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Upper Main Interactive Grid: Large 3D Viewport + Synchronized Slice Panels */}
       <div
         className={
@@ -229,6 +344,8 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
                 worldCrosshair={worldCoordinate}
                 voxelCrosshair={crosshair}
                 hasExpertMask={Boolean(expertMask)}
+                isDemoMode={isDemoMode}
+                hasSegmentation={Boolean(segmentationMask)}
                 onResetView={onResetCamera}
                 onUpdateCrosshair={onUpdateCrosshair}
               />
@@ -328,14 +445,9 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
               <NeurospaceMultiplanarView
                 crosshair={crosshair}
                 onUpdateCrosshair={onUpdateCrosshair}
-                dimensions={{ dimX: 240, dimY: 240, dimZ: 155 }}
-                spacing={{ x: 1.0, y: 1.0, z: 1.0 }}
-                affine={[
-                  [-1, 0, 0, 0],
-                  [0, -1, 0, 239],
-                  [0, 0, 1, 0],
-                  [0, 0, 0, 1],
-                ]}
+                dimensions={dimensions}
+                spacing={spacing}
+                affine={affine}
                 volumeData={activeVolume}
                 segmentationMask={segmentationMask}
                 expertMask={expertMask}
@@ -346,6 +458,7 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
                 activeSequence={activeSequence}
                 onSelectSequence={onSelectSequence}
                 onCenterTumour={handleCenterTumour}
+                isDemoMode={isDemoMode}
               />
             ) : (
               <OrthogonalSliceView
@@ -374,6 +487,9 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
           spacing={spacing}
           expertCounts={expertCounts}
           isDemoMode={isDemoMode}
+          hasSegmentation={Boolean(segmentationMask)}
+          segmentationSource={segmentationSource}
+          datasetState={datasetState}
         />
       </div>
     </div>

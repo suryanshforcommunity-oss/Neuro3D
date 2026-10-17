@@ -14,10 +14,13 @@ import {
   ClippingPlanes,
   ModelReliabilityInfo,
   StudyProvenance,
+  DatasetState,
+  SegmentationSource,
+  ActiveDataset,
 } from '../types';
 import { voxelToWorld, clampVoxel, DEFAULT_IDENTITY_AFFINE } from '../utils/coordinates';
-import { computeBraTSCompositeCounts } from '../utils/volume';
-import { validateNiftiFile } from '../utils/niftiValidation';
+import { computeBraTSCompositeCounts, calculateAffineVoxelVolumeMl, calculateVoxelVolumeMl } from '../utils/volume';
+import { validateNiftiFile, parseNiftiMaskBuffer } from '../utils/niftiValidation';
 import {
   getOrCreateDemoVolume,
   DEMO_PROVENANCE,
@@ -34,7 +37,15 @@ export type NavigationPage = 'landing' | 'workspace' | 'segmentation' | 'evaluat
 export function useNeuroScopeState() {
   const [activePage, setActivePage] = useState<NavigationPage>('landing');
   const [isDemoMode, setIsDemoMode] = useState<boolean>(true); // Initialized with demo for instant workstation test
+  const [datasetId, setDatasetId] = useState<string>('demo-study-042');
   const [activeSequence, setActiveSequence] = useState<MriSequenceType>('T1Gd');
+
+  // Strict Dataset State Machine
+  const [datasetState, setDatasetState] = useState<DatasetState>('DEMO_ACTIVE');
+  const [segmentationSource, setSegmentationSource] = useState<SegmentationSource>('demo');
+  const [inferenceProgress, setInferenceProgress] = useState<number>(0);
+  const [inferenceCurrentStep, setInferenceCurrentStep] = useState<string>('');
+  const [inferenceError, setInferenceError] = useState<string | null>(null);
 
   // Multi-patient demonstration examination state
   const [isDemoSelectorOpen, setIsDemoSelectorOpen] = useState<boolean>(false);
@@ -197,7 +208,13 @@ export function useNeuroScopeState() {
     setLabelCounts(demo.labelCounts);
     setExpertCounts(demo.expertLabelCounts);
     setIsDemoMode(true);
+    setDatasetId(slot.studyId);
     setActiveDemoSlot(slot);
+    setDatasetState('DEMO_ACTIVE');
+    setSegmentationSource('demo');
+    setInferenceProgress(100);
+    setInferenceCurrentStep('Simulated demonstration dataset active.');
+    setInferenceError(null);
 
     // Track unique demonstration cases evaluated (honest evaluation progress tracking)
     setEvaluatedDemoSlots(prev => prev.includes(slot.slotId) ? prev : [...prev, slot.slotId]);
@@ -237,6 +254,12 @@ export function useNeuroScopeState() {
   // Unload current case
   const unloadCase = useCallback(() => {
     setIsDemoMode(false);
+    setDatasetId('empty');
+    setDatasetState('NO_DATASET');
+    setSegmentationSource('none');
+    setInferenceProgress(0);
+    setInferenceCurrentStep('');
+    setInferenceError(null);
     setSequenceVolumes({ T1: null, T1Gd: null, T2: null, FLAIR: null, EXPERT_MASK: null });
     setSegmentationMask(null);
     setExpertMask(null);
@@ -257,37 +280,113 @@ export function useNeuroScopeState() {
     async (type: MriSequenceType, file: File) => {
       const validation = await validateNiftiFile(file);
 
-      setUploadedSequences(prev =>
-        prev.map(slot => {
-          if (slot.sequenceType === type) {
-            return {
-              ...slot,
-              file,
-              filename: file.name,
-              fileSize: file.size,
-              isValid: validation.isValid,
-              validationError: validation.error,
-              header: validation.header,
-              sha256: validation.sha256,
-              isLoaded: validation.isValid,
-            };
-          }
-          return slot;
-        })
-      );
+      // If upload failed validation: preserve previous dataset state without corrupting session
+      if (!validation.isValid) {
+        setDatasetState('UNSUPPORTED_FILE');
+        setInferenceError(validation.error || 'Invalid file format');
+        setUploadedSequences(prev =>
+          prev.map(slot =>
+            slot.sequenceType === type
+              ? {
+                  ...slot,
+                  file,
+                  filename: file.name,
+                  fileSize: file.size,
+                  isValid: false,
+                  validationError: validation.error,
+                  header: undefined,
+                  sha256: undefined,
+                  isLoaded: false,
+                }
+              : slot
+          )
+        );
+        return;
+      }
 
+      // Valid upload processing
       if (validation.isValid && validation.header) {
-        setDimensions(validation.header.dimensions);
-        setSpacing(validation.header.spacing);
-        setAffine(validation.header.affine);
-        setIsDemoMode(false);
+        const newDims = validation.header.dimensions;
+        const newSpacing = validation.header.spacing;
+        const newAffine = validation.header.affine;
+        const newDatasetId = `study_${validation.sha256 ? validation.sha256.slice(0, 12) : Date.now().toString()}`;
 
-        // If user uploaded expert mask or raw volume
+        setDimensions(newDims);
+        setSpacing(newSpacing);
+        setAffine(newAffine);
+        setDatasetId(newDatasetId);
+
+        // Center crosshair safely in the new volume space
+        setCrosshairState({
+          i: Math.floor(newDims.dimX / 2),
+          j: Math.floor(newDims.dimY / 2),
+          k: Math.floor(newDims.dimZ / 2),
+        });
+
+        // When switching from demo mode to real patient upload, cleanly isolate dataset:
+        // purge old demo volumes, clear stale segmentation masks, and reset lesion volume counts
+        const wasInDemo = isDemoMode;
+        if (wasInDemo) {
+          setIsDemoMode(false);
+          setSegmentationMask(null);
+          setExpertMask(null);
+          setLabelCounts({ ncrCount: 0, edCount: 0, etCount: 0, wtCount: 0, tcCount: 0 });
+          setExpertCounts(undefined);
+        }
+
+        // Update uploaded sequence slots
+        setUploadedSequences(prev => {
+          const next = prev.map(slot => {
+            if (slot.sequenceType === type) {
+              return {
+                ...slot,
+                file,
+                filename: file.name,
+                fileSize: file.size,
+                isValid: true,
+                validationError: undefined,
+                header: validation.header,
+                sha256: validation.sha256,
+                isLoaded: true,
+              };
+            }
+            // Clear other demo slots when transitioning from demo mode
+            if (wasInDemo) {
+              return {
+                sequenceType: slot.sequenceType,
+                file: null,
+                filename: '',
+                fileSize: 0,
+                isValid: false,
+                isLoaded: false,
+                validationError: undefined,
+                header: undefined,
+                sha256: undefined,
+              };
+            }
+            return slot;
+          });
+
+          const loadedMriSequences = next.filter(
+            s => ['T1', 'T1Gd', 'T2', 'FLAIR'].includes(s.sequenceType) && s.isLoaded
+          );
+          if (loadedMriSequences.length === 4) {
+            setDatasetState('MRI_READY');
+          } else {
+            setDatasetState('WAITING_FOR_MODALITIES');
+          }
+
+          return next;
+        });
+
+        setSegmentationSource(type === 'EXPERT_MASK' ? 'expert' : 'none');
+        setInferenceError(null);
+
+        // Process voxel payload
         if (validation.voxelData) {
           if (type === 'EXPERT_MASK') {
             const mask = new Uint8Array(validation.voxelData.buffer);
             setExpertMask(mask);
-            // Count labels
             let ncr = 0, ed = 0, et = 0;
             for (let v = 0; v < mask.length; v++) {
               if (mask[v] === 1) ncr++;
@@ -296,9 +395,8 @@ export function useNeuroScopeState() {
             }
             setExpertCounts(computeBraTSCompositeCounts({ ncrCount: ncr, edCount: ed, etCount: et }));
           } else {
-            // Normal MRI sequence
+            // MRI sequence intensity normalization into [0, 255]
             const uint8 = new Uint8Array(validation.voxelData.length);
-            // Normalize into 0..255 for display
             let minVal = Infinity, maxVal = -Infinity;
             for (let idx = 0; idx < validation.voxelData.length; idx++) {
               const val = validation.voxelData[idx];
@@ -309,7 +407,24 @@ export function useNeuroScopeState() {
             for (let idx = 0; idx < validation.voxelData.length; idx++) {
               uint8[idx] = Math.round(((validation.voxelData[idx] - minVal) / range) * 255);
             }
-            setSequenceVolumes(prev => ({ ...prev, [type]: uint8 }));
+
+            // Update volume state (isolate from previous demo sequence volumes)
+            setSequenceVolumes(prev => {
+              if (wasInDemo) {
+                return {
+                  T1: null,
+                  T1Gd: null,
+                  T2: null,
+                  FLAIR: null,
+                  EXPERT_MASK: null,
+                  [type]: uint8,
+                };
+              }
+              return { ...prev, [type]: uint8 };
+            });
+
+            // Automatically select uploaded sequence for immediate visualization
+            setActiveSequence(type);
           }
         }
 
@@ -325,12 +440,12 @@ export function useNeuroScopeState() {
             spacing: `${validation.header?.spacing.x.toFixed(2)} × ${validation.header?.spacing.y.toFixed(2)} × ${validation.header?.spacing.z.toFixed(2)} mm`,
           };
 
-          const existingFiles = (prev?.files || []).filter(f => f.sequence !== type);
+          const existingFiles = wasInDemo ? [] : (prev?.files || []).filter(f => f.sequence !== type);
           const updatedFiles = [...existingFiles, newFileEntry];
 
           return {
-            studyId: prev && !prev.isDemoData ? prev.studyId : `STUDY_${baseName.toUpperCase()}`,
-            patientDeidentifiedId: prev && !prev.isDemoData ? prev.patientDeidentifiedId : `ANON_${baseName}`,
+            studyId: prev && !prev.isDemoData && !wasInDemo ? prev.studyId : `STUDY_${baseName.toUpperCase()}`,
+            patientDeidentifiedId: prev && !prev.isDemoData && !wasInDemo ? prev.patientDeidentifiedId : `ANON_${baseName}`,
             institution: 'Clinical Research & Teaching Center',
             createdTimestamp: new Date().toISOString(),
             softwareVersion: 'NeuroScope-3D v1.0.0-rc1',
@@ -350,24 +465,181 @@ export function useNeuroScopeState() {
         });
       }
     },
-    []
+    [isDemoMode]
   );
 
   // Remove uploaded sequence
   const handleRemoveSequence = useCallback((type: MriSequenceType) => {
-    setUploadedSequences(prev =>
-      prev.map(slot =>
+    setUploadedSequences(prev => {
+      const next = prev.map(slot =>
         slot.sequenceType === type
           ? { sequenceType: type, file: null, filename: '', fileSize: 0, isValid: false, isLoaded: false, validationError: undefined, header: undefined, sha256: undefined }
           : slot
-      )
-    );
+      );
+      const reqCount = next.filter(s =>
+        ['T1', 'T1Gd', 'T2', 'FLAIR'].includes(s.sequenceType) && s.isLoaded
+      ).length;
+      if (reqCount === 4) {
+        setDatasetState('MRI_READY');
+      } else if (reqCount > 0) {
+        setDatasetState('WAITING_FOR_MODALITIES');
+      } else {
+        setDatasetState('NO_DATASET');
+      }
+      return next;
+    });
     setSequenceVolumes(prev => ({ ...prev, [type]: null }));
     if (type === 'EXPERT_MASK') {
       setExpertMask(null);
       setExpertCounts(undefined);
     }
   }, []);
+
+  // Execute real MONAI SegResNet segmentation against FastAPI backend
+  const runSegmentation = useCallback(async () => {
+    const t1Slot = uploadedSequences.find(s => s.sequenceType === 'T1' && s.isLoaded && s.file);
+    const t1gdSlot = uploadedSequences.find(s => s.sequenceType === 'T1Gd' && s.isLoaded && s.file);
+    const t2Slot = uploadedSequences.find(s => s.sequenceType === 'T2' && s.isLoaded && s.file);
+    const flairSlot = uploadedSequences.find(s => s.sequenceType === 'FLAIR' && s.isLoaded && s.file);
+    const expertSlot = uploadedSequences.find(s => s.sequenceType === 'EXPERT_MASK' && s.isLoaded && s.file);
+
+    if (!t1Slot?.file || !t1gdSlot?.file || !t2Slot?.file || !flairSlot?.file) {
+      setDatasetState('WAITING_FOR_MODALITIES');
+      setInferenceError('All 4 sequences (T1, T1-Gd, T2, FLAIR) are required for MONAI SegResNet inference.');
+      return;
+    }
+
+    const currentDatasetId = datasetId;
+
+    try {
+      setIsProcessing(true);
+      setDatasetState('INFERENCE_RUNNING');
+      setInferenceProgress(10);
+      setInferenceCurrentStep('Submitting multimodal sequences to FastAPI ingestion...');
+      setInferenceError(null);
+
+      const uploadRes = await apiClient.uploadStudy({
+        t1File: t1Slot.file,
+        t1ceFile: t1gdSlot.file,
+        t2File: t2Slot.file,
+        flairFile: flairSlot.file,
+        expertMaskFile: expertSlot?.file || undefined,
+        patientDeidentifiedId: provenance?.patientDeidentifiedId,
+      });
+
+      if (datasetId !== currentDatasetId) return; // Stale request check
+
+      setInferenceProgress(30);
+      setInferenceCurrentStep('Running MONAI SegResNet sliding-window inference...');
+
+      await apiClient.startSegmentation(uploadRes.studyId);
+
+      let pollCount = 0;
+      let isDone = false;
+      while (pollCount < 120 && !isDone) {
+        await new Promise(r => setTimeout(r, 1000));
+        if (datasetId !== currentDatasetId) return; // Stale check
+
+        const status = await apiClient.getStudyStatus(uploadRes.studyId);
+        setInferenceProgress(status.progress);
+        setInferenceCurrentStep(status.currentStep);
+
+        if (status.status === 'ready') {
+          isDone = true;
+        } else if (status.status === 'error') {
+          throw new Error(status.errorMessage || 'Segmentation failed on server');
+        }
+        pollCount++;
+      }
+
+      if (!isDone) {
+        throw new Error('Inference timed out waiting for server completion.');
+      }
+
+      setInferenceProgress(90);
+      setInferenceCurrentStep('Retrieving and decoding prediction NIfTI mask...');
+
+      const maskRes = await fetch(`${backendUrl}/api/v1/studies/${encodeURIComponent(uploadRes.studyId)}/prediction.nii.gz`);
+      if (!maskRes.ok) {
+        throw new Error(`Failed to download prediction mask: HTTP ${maskRes.status}`);
+      }
+
+      const maskBuffer = await maskRes.arrayBuffer();
+      const decoded = parseNiftiMaskBuffer(maskBuffer);
+
+      if (datasetId !== currentDatasetId) return; // Stale check
+
+      let ncr = 0, ed = 0, et = 0;
+      for (let i = 0; i < decoded.mask.length; i++) {
+        const val = decoded.mask[i];
+        if (val === 1) ncr++;
+        else if (val === 2) ed++;
+        else if (val === 4) et++;
+      }
+      const counts = computeBraTSCompositeCounts({ ncrCount: ncr, edCount: ed, etCount: et });
+
+      setSegmentationMask(decoded.mask);
+      setLabelCounts(counts);
+      setSegmentationSource('model');
+      setDatasetState('INFERENCE_SUCCESS');
+      setInferenceProgress(100);
+      setInferenceCurrentStep(`Inference complete: WT=${counts.wtCount} vox, TC=${counts.tcCount} vox, ET=${counts.etCount} vox`);
+    } catch (err: any) {
+      if (datasetId === currentDatasetId) {
+        setDatasetState('INFERENCE_FAILED');
+        setInferenceError(err.message || 'Segmentation inference failed');
+        setInferenceProgress(0);
+        setInferenceCurrentStep('Inference failed');
+      }
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [uploadedSequences, datasetId, provenance, backendUrl]);
+
+  // Authoritative ActiveDataset state object conforming to Section 3
+  const activeDataset = useMemo<ActiveDataset>(() => {
+    const loadedSequences = uploadedSequences
+      .filter(s => s.isLoaded && s.sequenceType !== 'EXPERT_MASK')
+      .map(s => s.sequenceType);
+    let voxelVolMl = 0.001;
+    try {
+      voxelVolMl = calculateAffineVoxelVolumeMl(affine);
+    } catch {
+      voxelVolMl = calculateVoxelVolumeMl(1, spacing);
+    }
+    return {
+      datasetId,
+      source: isDemoMode ? 'demo' : 'real',
+      datasetState,
+      segmentationSource,
+      loadedSequences,
+      activeSequence,
+      dimensions,
+      spacing,
+      affine,
+      currentVoxel: crosshair,
+      hasSegmentation: segmentationMask !== null,
+      inferenceError,
+      inferenceProgress,
+      inferenceCurrentStep,
+      voxelVolumeMl: voxelVolMl,
+    };
+  }, [
+    datasetId,
+    isDemoMode,
+    datasetState,
+    segmentationSource,
+    uploadedSequences,
+    activeSequence,
+    dimensions,
+    spacing,
+    affine,
+    crosshair,
+    segmentationMask,
+    inferenceError,
+    inferenceProgress,
+    inferenceCurrentStep,
+  ]);
 
   // Health check against backend
   const checkBackendHealth = useCallback(async () => {
@@ -412,6 +684,7 @@ export function useNeuroScopeState() {
     activePage,
     setActivePage,
     isDemoMode,
+    datasetId,
     activeSequence,
     setActiveSequence,
     backendStatus,
@@ -455,6 +728,15 @@ export function useNeuroScopeState() {
     setIsUploadModalOpen,
     isHelpModalOpen,
     setIsHelpModalOpen,
+
+    // Strict Dataset State Machine (Section 3)
+    datasetState,
+    segmentationSource,
+    inferenceProgress,
+    inferenceCurrentStep,
+    inferenceError,
+    runSegmentation,
+    activeDataset,
 
     // Multi-Patient Demo System
     isDemoSelectorOpen,

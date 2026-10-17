@@ -30,7 +30,7 @@ export async function validateNiftiFile(file: File): Promise<ValidationResult> {
   if (filename.endsWith('.dcm') || filename.endsWith('.dicom') || filename.endsWith('.ima')) {
     return {
       isValid: false,
-      error: `Invalid file extension: DICOM format detected for "${file.name}". NeuroScope requires 3D co-registered NIfTI (.nii or .nii.gz). Please convert your DICOM series to NIfTI with dcm2niix before uploading.`,
+      error: `Invalid file extension: DICOM format detected for "${file.name}". NeuroScope requires 3D co-registered NIfTI (.nii or .nii.gz). DICOM series lack single-file volumetric coordinate affines; please convert your DICOM series to 3D NIfTI with dcm2niix before uploading.`,
     };
   }
 
@@ -45,7 +45,7 @@ export async function validateNiftiFile(file: File): Promise<ValidationResult> {
   ) {
     return {
       isValid: false,
-      error: `Invalid file extension: Compressed archive detected for "${file.name}". Please extract the archive and upload the individual .nii or .nii.gz MRI volume directly.`,
+      error: `Invalid file extension: Compressed archive detected for "${file.name}". Please extract the archive and upload the individual .nii or .nii.gz 3D NIfTI volume directly. Archives cannot be read directly as volumetric MRI scans.`,
     };
   }
 
@@ -59,9 +59,11 @@ export async function validateNiftiFile(file: File): Promise<ValidationResult> {
     filename.endsWith('.webp') ||
     filename.endsWith('.svg')
   ) {
+    const extMatch = file.name.match(/\.[^.]+$/);
+    const detectedType = extMatch ? `${extMatch[0].toUpperCase().slice(1)} 2D Image` : '2D Bitmap Image';
     return {
       isValid: false,
-      error: `Invalid file extension: 2D image format detected for "${file.name}". NeuroScope requires 3D medical volumetric MRI scans (.nii or .nii.gz), not 2D bitmap images.`,
+      error: `Invalid file extension: 2D image format detected for "${file.name}" (detected format: ${detectedType}). NeuroScope requires 3D medical volumetric MRI scans (.nii or .nii.gz) with slice depth Z > 1 and physical voxel spacing, not 2D bitmap images. 2D images cannot be reconstructed into orthogonal 3D multiplanar views or segmented volumetrically.`,
     };
   }
 
@@ -75,9 +77,11 @@ export async function validateNiftiFile(file: File): Promise<ValidationResult> {
     filename.endsWith('.doc') ||
     filename.endsWith('.docx')
   ) {
+    const isPdf = filename.endsWith('.pdf');
+    const detectedType = isPdf ? 'PDF Report Document' : 'Clinical Document / Text File';
     return {
       isValid: false,
-      error: `Invalid file extension: Non-imaging document detected for "${file.name}". Please provide a 3D medical NIfTI neuroimaging scan (.nii or .nii.gz).`,
+      error: `Invalid file extension: Non-imaging document detected for "${file.name}" (detected format: ${detectedType}). Text documents and clinical reports do not contain 3D volumetric MRI voxel arrays or spatial coordinate affines. Please upload a 3D medical NIfTI neuroimaging scan (.nii or .nii.gz).`,
     };
   }
 
@@ -87,7 +91,7 @@ export async function validateNiftiFile(file: File): Promise<ValidationResult> {
     const ext = extMatch ? extMatch[0] : 'none';
     return {
       isValid: false,
-      error: `Invalid file extension: Unsupported file extension (${ext}) for "${file.name}". Only standard .nii and .nii.gz medical imaging files are supported.`,
+      error: `Invalid file extension: Unsupported file extension (${ext}) for "${file.name}". NeuroScope requires standard .nii or .nii.gz medical volumetric imaging files with 3D voxel arrays.`,
     };
   }
 
@@ -150,9 +154,22 @@ export async function validateNiftiFile(file: File): Promise<ValidationResult> {
 
     // 7. NIfTI binary signature (magic bytes) verification
     if (!nifti.isNIFTI(niftiBuffer)) {
+      // Check magic bytes for non-NIfTI files disguised with .nii or .nii.gz extension
+      const bytes = new Uint8Array(niftiBuffer.slice(0, Math.min(niftiBuffer.byteLength, 136)));
+      let detectedDesc = '';
+      if (bytes.length >= 4 && bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) {
+        detectedDesc = ' (Detected file type: PDF Document)';
+      } else if (bytes.length >= 4 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) {
+        detectedDesc = ' (Detected file type: PNG 2D Image)';
+      } else if (bytes.length >= 3 && bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
+        detectedDesc = ' (Detected file type: JPEG 2D Image)';
+      } else if (bytes.length >= 132 && bytes[128] === 0x44 && bytes[129] === 0x49 && bytes[130] === 0x43 && bytes[131] === 0x4D) {
+        detectedDesc = ' (Detected file type: DICOM Medical Image)';
+      }
+
       return {
         isValid: false,
-        error: `File "${file.name}" does not contain a valid NIfTI header signature ('n+1', 'ni1', or 'n+2' magic number missing). The file may be an unrelated binary renamed to .nii.`,
+        error: `File "${file.name}"${detectedDesc} does not contain a valid NIfTI header signature ('n+1', 'ni1', or 'n+2' magic number missing). The file is not a valid 3D NIfTI volumetric MRI scan. Please upload standard .nii or .nii.gz neuroimaging data.`,
       };
     }
 
@@ -429,4 +446,85 @@ export function validateSequenceConsistency(sequences: UploadedSequence[]): {
     errors,
     warnings,
   };
+}
+
+/**
+ * Parses and decodes a NIfTI mask buffer (such as model prediction.nii.gz downloaded from backend)
+ * into a typed Uint8Array label array with associated geometry.
+ */
+export function parseNiftiMaskBuffer(rawBuffer: ArrayBuffer): {
+  mask: Uint8Array;
+  dimensions: VolumeDimensions;
+  spacing: VoxelSpacing;
+  affine: AffineMatrix;
+} {
+  let niftiBuffer: ArrayBuffer = rawBuffer;
+  if (nifti.isCompressed(rawBuffer)) {
+    niftiBuffer = nifti.decompress(rawBuffer) as ArrayBuffer;
+  }
+  if (!nifti.isNIFTI(niftiBuffer)) {
+    throw new Error('Downloaded prediction buffer is not a valid NIfTI format');
+  }
+
+  const header = nifti.readHeader(niftiBuffer);
+  if (!header) {
+    throw new Error('Unable to read NIfTI header from prediction buffer');
+  }
+
+  const imageBuffer = nifti.readImage(header, niftiBuffer);
+  if (!imageBuffer) {
+    throw new Error('Empty image payload in prediction NIfTI buffer');
+  }
+
+  const dimensions: VolumeDimensions = {
+    dimX: header.dims[1],
+    dimY: header.dims[2],
+    dimZ: header.dims[3],
+  };
+
+  const spacing: VoxelSpacing = {
+    x: Math.abs(header.pixDims[1]) || 1.0,
+    y: Math.abs(header.pixDims[2]) || 1.0,
+    z: Math.abs(header.pixDims[3]) || 1.0,
+  };
+
+  let affine: AffineMatrix;
+  if (header.affine && Array.isArray(header.affine) && header.affine.length === 4) {
+    affine = header.affine as AffineMatrix;
+  } else {
+    affine = [
+      [spacing.x, 0, 0, -(dimensions.dimX * spacing.x) / 2],
+      [0, spacing.y, 0, -(dimensions.dimY * spacing.y) / 2],
+      [0, 0, spacing.z, -(dimensions.dimZ * spacing.z) / 2],
+      [0, 0, 0, 1],
+    ];
+  }
+
+  // Convert raw image data to Uint8Array labels (0, 1, 2, 4)
+  const totalVoxels = dimensions.dimX * dimensions.dimY * dimensions.dimZ;
+  const mask = new Uint8Array(totalVoxels);
+
+  if (header.datatypeCode === 2) {
+    // uint8
+    const src = new Uint8Array(imageBuffer);
+    mask.set(src.subarray(0, totalVoxels));
+  } else if (header.datatypeCode === 4) {
+    // int16
+    const src = new Int16Array(imageBuffer);
+    for (let i = 0; i < totalVoxels; i++) {
+      mask[i] = Math.max(0, Math.min(255, src[i]));
+    }
+  } else if (header.datatypeCode === 16) {
+    // float32
+    const src = new Float32Array(imageBuffer);
+    for (let i = 0; i < totalVoxels; i++) {
+      mask[i] = Math.max(0, Math.min(255, Math.round(src[i])));
+    }
+  } else {
+    // generic byte view
+    const src = new Uint8Array(imageBuffer);
+    mask.set(src.subarray(0, totalVoxels));
+  }
+
+  return { mask, dimensions, spacing, affine };
 }

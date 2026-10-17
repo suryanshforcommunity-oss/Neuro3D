@@ -160,6 +160,8 @@ export interface NeurospaceViewer3DProps {
   worldCrosshair?: WorldCoordinate | [number, number, number] | null;
   voxelCrosshair?: VoxelCoordinate | null;
   hasExpertMask?: boolean;
+  isDemoMode?: boolean;
+  hasSegmentation?: boolean;
   onResetView?: () => void;
   onUpdateCrosshair?: (coord: Partial<VoxelCoordinate>) => void;
 }
@@ -180,6 +182,8 @@ export const NeurospaceViewer3D: React.FC<NeurospaceViewer3DProps> = ({
   worldCrosshair = null,
   voxelCrosshair = null,
   hasExpertMask = false,
+  isDemoMode = true,
+  hasSegmentation = false,
   onResetView,
   onUpdateCrosshair,
 }) => {
@@ -633,14 +637,30 @@ export const NeurospaceViewer3D: React.FC<NeurospaceViewer3DProps> = ({
 
         <div className="bg-slate-950/80 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-800/60 text-[9px] font-mono text-slate-400 flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span>Neurospace 3D Physical Isosurface Engine (mm)</span>
+          <span>
+            {isDemoMode
+              ? 'SIMULATED DEMO SEGMENTATION (Aarav Sharma)'
+              : hasSegmentation
+              ? 'MONAI Model Prediction Active (Patient Tumour Mesh) | Reference Brain Shell'
+              : '3D Brain Surface: Reference Anatomical Model (Raw MRI Uploaded)'}
+          </span>
         </div>
       </div>
 
       {/* Bottom Right Compartment Legend */}
       <div className="absolute bottom-3 right-3 pointer-events-none z-10 flex flex-col gap-1 items-end">
         <div className="bg-slate-950/85 backdrop-blur-md p-2 rounded-xl border border-slate-800 text-[10px] font-mono text-slate-300 shadow-md space-y-1">
-          {activeTab === 'agreement' ? (
+          {!isDemoMode && !hasSegmentation ? (
+            <div className="text-[10px] font-mono text-slate-400 max-w-[180px]">
+              <div className="text-sky-400 font-bold flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-sky-400" />
+                <span>MRI Scan Active</span>
+              </div>
+              <div className="text-[9px] text-slate-500 mt-0.5 leading-snug">
+                Click 'Run MONAI SegResNet' to generate tumour mesh
+              </div>
+            </div>
+          ) : activeTab === 'agreement' ? (
             <>
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500" />
